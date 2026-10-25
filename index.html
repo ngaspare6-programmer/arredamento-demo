@@ -1,0 +1,1492 @@
+<!doctype html>
+<html lang="it" data-tema="scuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Preventivo arredamento · demo GPN Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* scuro come l'Ingrosso (grafite); il tasto sole / luna passa al chiaro, per il negozio o la casa del cliente al sole.
+     --pieno: fondo del pulsante pieno; --verde: scritte e scelte (sul grafite serve il verde luminoso) */
+  :root {
+    --bg: #121316; --foglio: #1A1C21; --fondo: #23262D; --linea: #2E3139; --testo: #ECEDEF; --sec: #8C8F98; --spento: #555962;
+    --pieno: #166534; --verde: #22C55E; --verde-tenue: rgba(34,197,94,.12); --graf: #2E3139; --rosso: #F87171;
+  }
+  :root[data-tema="chiaro"] {
+    --bg: #FFFFFF; --foglio: #FFFFFF; --fondo: #F5F4F0; --linea: #DEDCD5; --testo: #111214; --sec: #4A4D55; --spento: #9A9DA4;
+    --pieno: #166534; --verde: #166534; --verde-tenue: #E8F3EC; --graf: #121316; --rosso: #B91C1C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* scorre la pagina intera (sul telefono un riquadro che scorre dentro una pagina ferma si "incastrava");
+     intestazione e pulsante in basso restano agganciati con position: sticky */
+  body { background: var(--bg); color: var(--testo); font-family: Inter, sans-serif; font-size: 15px; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+  button, input { font-family: inherit; color: inherit; }
+  button { background: none; border: 0; cursor: pointer; }
+  .num { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sim { width: 24px; height: 24px; flex: none; }
+
+  /* stessa schermata su telefono, iPad e computer: sugli schermi grandi la colonna si allarga fino a 720 px
+     (oltre, le righe diventano troppo lunghe: l'occhio si perde tra il nome e il numero) */
+  .app { max-width: 720px; min-height: 100vh; min-height: 100dvh; margin: 0 auto; background: var(--bg); position: relative; }
+  .schermo { min-height: inherit; display: flex; flex-direction: column; }
+  .testa { position: sticky; top: 0; z-index: 5; background: var(--bg); }
+  .schermo[hidden] { display: none; }
+  .corpo { flex: 1; }
+
+  /* barra in alto, uguale nelle due schermate */
+  .barra { display: flex; align-items: center; gap: 2px; padding: 14px 10px 4px 18px; flex: none; }
+  .barra h1 { font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 700; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .barra button { font-size: 14px; min-height: 44px; padding: 0 6px; color: var(--sec); }
+  .barra .prezzi { color: var(--verde); font-weight: 600; }
+  .barra .settori { color: var(--verde); font-weight: 600; padding: 0 8px 0 0; margin-left: -4px; }
+  .barra .tema { width: 40px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .tema svg { width: 20px; height: 20px; }
+  .tema .luna, [data-tema="chiaro"] .tema .sole { display: none; }
+  [data-tema="chiaro"] .tema .luna { display: block; }
+
+  .passi { display: flex; gap: 6px; padding: 6px 18px 0; font-size: 12px; font-weight: 600; color: var(--sec); flex: none; }
+  .passi span { flex: 1; border-top: 3px solid var(--linea); padding-top: 6px; }
+  .passi .on { border-color: var(--verde); color: var(--testo); }
+  .passi .fatto { border-color: var(--verde); }
+
+  .piede { position: sticky; bottom: 0; z-index: 5; padding: 12px 16px calc(18px + env(safe-area-inset-bottom)); border-top: 1px solid var(--linea); background: var(--bg); flex: none; }
+  .btn { width: 100%; min-height: 56px; border-radius: 12px; background: var(--pieno); color: #fff; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-2 { width: 100%; min-height: 52px; border: 1.5px solid var(--linea); border-radius: 14px; background: var(--bg); font-weight: 600; font-size: 16px; }
+  .link { display: block; width: 100%; min-height: 44px; margin-top: 4px; font-size: 14px; color: var(--sec); }
+  .link b { color: var(--verde); }
+
+  /* ---------- 1 · Ritocchi ---------- */
+  .totale-s { padding: 14px 18px 12px; flex: none; }
+  .totale-s .tot { font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+  .totale-s small { display: block; color: var(--sec); font-size: 13px; }
+
+  .schede { display: flex; gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--linea); overflow-x: auto; scrollbar-width: none; flex: none; }
+  .schede::-webkit-scrollbar { display: none; }
+  .scheda { padding: 12px 12px 11px; min-height: 48px; font-size: 14px; font-weight: 600; color: var(--sec); white-space: nowrap; border-bottom: 3px solid transparent; }
+  .scheda.on { color: var(--testo); border-color: var(--verde); }
+  .scheda.piu { color: var(--verde); font-size: 18px; padding: 8px 14px; }
+
+  .voci { padding: 4px 14px 12px; }
+  .voce { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--linea); }
+  .etich { flex: 1; min-width: 0; }
+  .etich b { display: block; font-size: 16px; }
+  .etich small { color: var(--sec); font-size: 13px; }
+  .tasto { width: 56px; height: 56px; flex: none; border-radius: 12px; border: 1.5px solid var(--testo); background: var(--fondo); font-family: "Barlow Condensed", sans-serif; font-size: 28px; font-weight: 700; transition: transform .08s; }
+  .tasto:active { transform: scale(.94); }
+  .tasto:disabled { border-color: var(--linea); color: var(--spento); cursor: default; }
+  .q { width: 40px; text-align: center; font-size: 26px; font-weight: 700; flex: none; }
+  .q.zero { color: var(--spento); }
+  .q.batte { animation: batte .25s; }
+  @keyframes batte { 50% { transform: scale(1.25); color: var(--verde); } }
+  .agg-comp { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 52px; margin-top: 14px; border: 1.5px dashed var(--linea); border-radius: 12px; color: var(--verde); font-weight: 600; font-size: 15px; }
+  .togli { display: block; margin: 6px auto 0; min-height: 44px; padding: 0 12px; font-size: 14px; color: var(--sec); }
+
+  .sub { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; margin-bottom: 10px; }
+  .sub b { font-size: 18px; }
+
+  /* ---------- 2 · Casa ---------- */
+  .case { display: flex; gap: 8px; padding: 16px 14px 0; flex: none; }
+  .casa { flex: 1; min-height: 56px; border: 1.5px solid var(--linea); border-radius: 12px; font-weight: 600; font-size: 15px; transition: background .15s, border-color .15s; }
+  .casa[aria-pressed="true"] { border: 2px solid var(--verde); background: var(--verde-tenue); color: var(--verde); }
+
+  .numero { text-align: center; padding: 28px 0 20px; flex: none; }
+  .numero .tot { font-size: 60px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .numero small { display: block; color: var(--sec); font-size: 14px; margin-top: 10px; }
+
+  .righe { padding: 0 18px 12px; }
+  .riga { display: flex; align-items: center; min-height: 52px; border-bottom: 1px solid var(--linea); }
+  .riga .nome { flex: 1; font-size: 16px; }
+  .riga .p { color: var(--sec); font-size: 14px; margin-right: 4px; }
+  .riga .cambia { color: var(--verde); font-weight: 600; font-size: 14px; min-height: 48px; padding: 0 0 0 14px; }
+
+  /* fogli dal basso: prezzi, nuova stanza, anteprima WhatsApp */
+  .velo { position: fixed; inset: 0; justify-content: center; background: rgba(0,0,0,.55); display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+  .velo.on { opacity: 1; pointer-events: auto; }
+  /* i fogli tengono lo scorrimento per sé: arrivati in fondo non lo passano alla pagina sotto (bug dal telefono, 16/10) */
+  .velo, .foglio, .finestra, .chat, .mail-corpo, .carta, .lato { overscroll-behavior: contain; }
+  /* mentre un foglio è aperto la pagina è ferma (inchiodata dove era; top lo mette il codice) */
+  body.fermo { position: fixed; left: 0; right: 0; overflow: hidden; }
+  .foglio { background: var(--foglio); width: 100%; max-width: 560px; max-height: 92%; overflow-y: auto; border-radius: 20px 20px 0 0; padding: 18px 16px calc(20px + env(safe-area-inset-bottom)); transform: translateY(30px); transition: transform .2s; }
+  .velo.on .foglio { transform: none; }
+  .foglio h2 { font-family: "Space Grotesk", sans-serif; font-size: 18px; margin-bottom: 4px; }
+  .foglio .spiega { font-size: 13px; color: var(--sec); margin-bottom: 10px; }
+  .scelte { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .scelte button { min-height: 56px; border: 1.5px solid var(--linea); border-radius: 12px; font-weight: 600; }
+
+  .scelte .altro { border-style: dashed; color: var(--verde); }
+  .mano { display: flex; gap: 8px; margin-top: 10px; }
+  .mano[hidden] { display: none; }
+  .mano input { flex: 1; min-width: 0; height: 52px; border: 1.5px solid var(--verde); border-radius: 12px; padding: 0 12px; font-size: 16px; outline: none; }
+  .mano button { min-height: 52px; padding: 0 16px; border-radius: 12px; background: var(--pieno); color: #fff; font-weight: 600; }
+
+  .etich[data-cat] { cursor: pointer; }
+  /* prese e interruttori: riga del gruppo (si tocca per scegliere il tipo), sotto una riga per tipo */
+  .gruppo { display: flex; align-items: center; gap: 8px; min-height: 64px; border-bottom: 1px solid var(--linea); }
+  .gruppo .apri { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 0; text-align: left; }
+  .gruppo .etich b { font-size: 16px; }
+  .gruppo .etich small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gruppo .freccia { flex: none; width: 20px; height: 20px; color: var(--testo); transition: transform .15s; }
+  .gruppo [aria-expanded="true"] .freccia { transform: rotate(180deg); }
+  .gruppo .tipo-piu { flex: none; min-height: 40px; display: flex; align-items: center; padding: 0 14px; border: 1.5px solid var(--verde); border-radius: 10px; color: var(--verde); font-weight: 600; font-size: 14px; }
+  .voce.figlia { padding-left: 34px; }
+  .voce.figlia .etich b { font-size: 15px; }
+  /* catalogo dei modelli (prese, luci): si sceglie stanza per stanza */
+  .etich .scelto { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; color: var(--verde); }
+  .aziende { display: flex; gap: 6px; margin-top: 4px; }
+  .aziende button { flex: 1; min-height: 48px; border: 1.5px solid var(--linea); border-radius: 12px; font-weight: 600; font-size: 14px; }
+  .aziende button[aria-pressed="true"] { border: 2px solid var(--verde); background: var(--verde-tenue); color: var(--verde); }
+  .togli-cat { display: block; width: 100%; min-height: 48px; margin-top: 10px; font-size: 15px; font-weight: 600; color: var(--rosso); }
+  .modelli { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .mod { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 10px 12px; border: 1.5px solid var(--linea); border-radius: 12px; text-align: left; }
+  .mod[aria-pressed="true"] { border: 2px solid var(--verde); background: var(--verde-tenue); }
+  /* scheda prodotto: foto (per ora un disegno), marca, nome, codice */
+  .foto { width: 72px; height: 72px; flex: none; border-radius: 10px; background: #F5F4F0; display: flex; align-items: center; justify-content: center; }
+  .foto svg { width: 60px; height: 60px; }
+  .mod .marca { display: block; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--sec); }
+  .mod .cod { display: block; font-size: 12px; color: var(--sec); }
+  .avviso-cat { font-size: 12px; color: var(--sec); background: var(--fondo); border-radius: 10px; padding: 8px 10px; margin: 8px 0 4px; }
+  .mod .info { flex: 1; min-width: 0; }
+  .mod .info b { display: block; font-size: 15px; }
+  .mod .info small { color: var(--sec); font-size: 13px; }
+  .mod .piu-p { font-size: 16px; font-weight: 700; }
+  .mod.nessuno { min-height: 52px; justify-content: center; border-style: dashed; color: var(--sec); font-weight: 600; }
+  .gia { margin-top: 4px; }
+  .gia-titolo { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--sec); margin: 6px 0 2px; }
+  .gia-riga { display: flex; align-items: center; min-height: 48px; border-bottom: 1px solid var(--linea); font-size: 15px; }
+  .gia-riga span { flex: 1; }
+  .gia-riga button { min-height: 44px; padding: 0 4px 0 14px; color: var(--sec); font-size: 14px; }
+  .gia-riga button:hover { color: var(--rosso); }
+
+  /* listino prezzi */
+  .prezzo { display: flex; align-items: center; gap: 10px; min-height: 60px; border-bottom: 1px solid var(--linea); }
+  .prezzo label { flex: 1; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+  .campo { display: flex; align-items: center; border: 1.5px solid var(--linea); border-radius: 10px; height: 48px; padding: 0 10px; width: 120px; background: var(--fondo); }
+  .campo:focus-within { border-color: var(--verde); background: var(--bg); }
+  .campo span { color: var(--sec); }
+  .campo input { border: 0; background: none; width: 100%; height: 100%; text-align: right; font-family: "Barlow Condensed", sans-serif; font-size: 22px; font-weight: 700; outline: none; }
+  .foglio .btn { margin-top: 14px; }
+
+  /* anteprima WhatsApp: nella demo non parte nessun messaggio */
+  #veloWA { z-index: 50; }
+  .chat { background: #EFEAE2; border-radius: 14px; padding: 14px 12px; max-height: 52vh; overflow-y: auto; margin-top: 8px; }
+  .bolla { background: #D9FDD3; border-radius: 10px 10px 2px 10px; padding: 9px 11px 6px; margin-left: 18px; font-size: 14.5px; line-height: 1.45; color: #111b21; white-space: pre-wrap; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+  .bolla .ora { display: block; text-align: right; font-size: 11px; color: #667781; margin-top: 2px; }
+  /* invio: scelta del canale e anteprime */
+  .canali { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .canali button { display: flex; flex-direction: column; align-items: flex-start; min-height: 64px; padding: 10px 14px; border: 1.5px solid var(--linea); border-radius: 12px; text-align: left; }
+  .canali b { font-size: 16px; }
+  .canali small { color: var(--sec); font-size: 13px; }
+  .mail { border: 1px solid var(--linea); border-radius: 12px; overflow: hidden; margin-top: 8px; font-size: 14px; }
+  .mail-testa { background: var(--fondo); padding: 10px 12px; border-bottom: 1px solid var(--linea); }
+  .mail-testa div { color: var(--sec); }
+  .mail-testa b { color: var(--testo); font-weight: 600; }
+  .mail-corpo { padding: 12px; white-space: pre-wrap; max-height: 40vh; overflow-y: auto; line-height: 1.5; }
+  .carta { background: var(--fondo); border-radius: 12px; padding: 14px; margin-top: 8px; max-height: 56vh; overflow-y: auto; }
+  .pagina-pdf { color: #111214; --sec: #4A4D55; --linea: #DEDCD5; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.12); padding: 20px 18px 24px; min-height: 380px; font-size: 12px; }
+  .pdf-titolo { font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 700; letter-spacing: .04em; }
+  .pdf-sotto { color: var(--sec); margin-bottom: 14px; }
+  .pdf-riga { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--linea); }
+  .pdf-riga span:first-child { flex: 1; }
+  .pdf-riga .d { color: var(--sec); }
+  .pdf-tot { display: flex; justify-content: space-between; margin-top: 12px; font-family: "Space Grotesk", sans-serif; font-size: 16px; font-weight: 700; }
+  .pdf-nota { color: var(--sec); margin-top: 4px; }
+  .nota-demo { text-align: center; font-size: 13px; color: var(--sec); margin: 12px 0 10px; }
+
+  .toast { position: fixed; left: 50%; bottom: 120px; transform: translate(-50%, 20px); background: var(--graf); color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,.3); font-size: 14px; padding: 12px 16px; border-radius: 12px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: 340px; text-align: center; z-index: 60; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ===== lati su computer (solo da 1180 px in su; la colonna centrale non cambia) ===== */
+  .lato { display: none; }
+  @media (min-width: 1180px) {
+    .lato { display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; width: calc((100vw - 720px) / 2); padding: 40px 36px; overflow-y: auto; }
+    .lato.sx { left: 0; border-right: 1px solid var(--linea); }
+    .lato.dx { right: 0; border-left: 1px solid var(--linea); }
+  }
+  .lato .marchio { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 15px; letter-spacing: .02em; display: flex; align-items: center; gap: 8px; }
+  .lato .marchio i { width: 10px; height: 10px; border-radius: 3px; background: var(--verde); display: inline-block; }
+  .lato h2 { font-family: "Space Grotesk", sans-serif; font-size: 30px; line-height: 1.15; margin: 40px 0 12px; letter-spacing: -0.01em; }
+  .lato .frase { color: var(--sec); font-size: 16px; max-width: 34ch; }
+  .vantaggi { list-style: none; margin-top: 32px; display: flex; flex-direction: column; gap: 20px; }
+  .vantaggi li { display: flex; gap: 14px; }
+  .vantaggi .ico { width: 40px; height: 40px; flex: none; border-radius: 10px; background: var(--fondo); color: var(--verde); display: flex; align-items: center; justify-content: center; }
+  .vantaggi .ico svg { width: 22px; height: 22px; }
+  .vantaggi b { display: block; font-size: 15px; }
+  .vantaggi small { color: var(--sec); font-size: 13px; }
+  .lato .piede-lato { margin-top: auto; padding-top: 24px; font-size: 12px; color: var(--spento); }
+  .lato .etichetta { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sec); margin-bottom: 12px; }
+  .stanze-lato { display: flex; flex-direction: column; }
+  .stanze-lato button { display: flex; justify-content: space-between; gap: 10px; min-height: 52px; align-items: center; border-bottom: 1px solid var(--linea); text-align: left; font-size: 15px; }
+  .stanze-lato button.on b { color: var(--verde); }
+  .stanze-lato span { color: var(--sec); font-size: 14px; }
+  .stanze-lato .tot-lato { display: flex; justify-content: space-between; padding-top: 16px; font-size: 15px; }
+  .stanze-lato .tot-lato b { font-family: "Barlow Condensed", sans-serif; font-size: 28px; }
+  .aziende-lato { display: flex; flex-direction: column; gap: 14px; }
+  .az-card { background: var(--foglio); border: 1px solid var(--linea); border-radius: 14px; padding: 16px; }
+  .az-card .riga1 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .az-card b { font-size: 16px; }
+  .az-card small { color: var(--sec); font-size: 12px; }
+  .az-card .prodotti { display: flex; gap: 8px; }
+  .az-card .prodotti span { flex: 1; aspect-ratio: 1; border-radius: 10px; background: #F5F4F0; display: flex; align-items: center; justify-content: center; }
+  .az-card .prodotti svg { width: 70%; height: 70%; }
+  /* lato sinistro: vetrina sopra e stanze sotto, più strette per stare in uno schermo */
+  .lato.compatto { padding-top: 32px; }
+  .lato.compatto h2 { font-size: 26px; margin: 28px 0 10px; }
+  .lato.compatto .frase { font-size: 15px; }
+  .lato.compatto .vantaggi { margin-top: 22px; gap: 14px; }
+  .lato.compatto .stanze-lato button { min-height: 46px; }
+  /* vantaggi toccabili */
+  .vant-btn { display: flex; gap: 14px; width: 100%; text-align: left; align-items: center; padding: 8px 10px; margin: -8px -10px; border-radius: 12px; }
+  .vant-btn:hover { background: var(--fondo); }
+  .vant-btn .vai { margin-left: auto; font-size: 22px; color: var(--verde); }
+  /* catalogo completo: finestra grande al centro, per sfogliare */
+  #veloCatTutto { align-items: center; }
+  .finestra { background: var(--foglio); width: calc(100% - 64px); max-width: 960px; max-height: 88vh; overflow-y: auto; border-radius: 20px; padding: 24px 28px 28px; transform: translateY(20px); transition: transform .2s; }
+  .velo.on .finestra { transform: none; }
+  .finestra .testa-f { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .finestra h2 { font-family: "Space Grotesk", sans-serif; font-size: 24px; }
+  .finestra .chiudi-f { min-height: 44px; padding: 0 12px; color: var(--sec); font-size: 15px; }
+  .finestra .aziende { max-width: 520px; margin-top: 14px; }
+  .finestra h3 { font-family: "Space Grotesk", sans-serif; font-size: 18px; margin: 26px 0 4px; padding-top: 18px; border-top: 1px solid var(--linea); }
+  .finestra h4 { font-size: 13px; font-weight: 600; color: var(--sec); text-transform: uppercase; letter-spacing: .07em; margin: 12px 0 8px; }
+  .griglia-cat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .carta-cat { border: 1px solid var(--linea); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .carta-cat .foto { width: 100%; height: 120px; }
+  .carta-cat .foto svg { width: 96px; height: 96px; }
+  .carta-cat .marca { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--sec); }
+  .carta-cat b { display: block; font-size: 15px; }
+  .carta-cat .cod { font-size: 12px; color: var(--sec); }
+  .carta-cat .riga-p { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+  .carta-cat .riga-p .num { font-size: 20px; }
+  .carta-cat .agg { min-height: 40px; padding: 0 12px; border-radius: 10px; background: var(--pieno); color: #fff; font-weight: 600; font-size: 13px; }
+  /* PDF nuovo: intestazione, sezioni per stanza, una riga per componente con l'immagine */
+  .pdf-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid #111214; }
+  .pdf-ditta { display: flex; align-items: center; gap: 8px; text-align: right; }
+  .pdf-ditta .logo { width: 34px; height: 34px; border-radius: 8px; background: #166534; color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .pdf-ditta { white-space: nowrap; }
+  .pdf-ditta b { display: block; font-size: 13px; }
+  .pdf-ditta small { color: #4A4D55; font-size: 11px; }
+  .pdf-per { margin: 10px 0 4px; color: #4A4D55; }
+  .pdf-per b { color: #111214; }
+  .pdf-sez { margin-top: 14px; }
+  .pdf-sez-t { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 4px; border-bottom: 1px solid #111214; }
+  .pdf-sez-t b { font-family: "Space Grotesk", sans-serif; font-size: 14px; }
+  .pdf-r { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #DEDCD5; }
+  .pdf-img { width: 36px; height: 36px; flex: none; border-radius: 6px; background: #F5F4F0; display: flex; align-items: center; justify-content: center; }
+  .pdf-img svg { width: 30px; height: 30px; }
+  .pdf-img .sim { width: 20px; height: 20px; color: #4A4D55; }
+  .pdf-nome { flex: 1; min-width: 0; }
+  .pdf-nome b { display: block; font-weight: 600; }
+  .pdf-nome small { color: #4A4D55; font-size: 11px; }
+  .pdf-nome .dascegliere { color: #9A9DA4; font-style: italic; }
+  .pdf-imp { text-align: right; white-space: nowrap; }
+  .pdf-imp small { display: block; color: #4A4D55; font-size: 11px; }
+  .pdf-imp .num { font-size: 15px; }
+  .pdf-tot { border-top: 2px solid #111214; padding-top: 10px; margin-top: 16px; }
+  .pdf-tot .num { font-size: 22px; }
+  /* allegato PDF in chat e in mail */
+  .allegato { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,.06); text-align: left; margin-bottom: 6px; cursor: pointer; }
+  .allegato .pdf-ico { width: 34px; height: 40px; flex: none; border-radius: 4px; background: #DC2626; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; }
+  .allegato b { display: block; font-size: 13.5px; color: #111b21; }
+  .allegato small { font-size: 12px; color: #667781; }
+  .mail-alleg { padding: 0 12px 12px; }
+  .mail-alleg .allegato { background: var(--fondo); border: 1px solid var(--linea); }
+  .mail-alleg .allegato b { color: var(--testo); }
+  .mail-alleg .allegato small { color: var(--sec); }
+  .vuota-stanza { padding: 22px 4px 6px; color: var(--sec); font-size: 15px; text-align: center; }
+  /* freccia indietro: solo dove c'è un passo prima */
+  .testa-foglio { display: flex; align-items: center; gap: 4px; }
+  .testa-foglio h2 { margin-bottom: 0; }
+  .indietro { width: 40px; height: 40px; margin-left: -10px; flex: none; font-size: 32px; line-height: 1; color: var(--testo); display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
+  .indietro[hidden] { display: none; }
+
+  /* ===== arredamento: moduli (− / +) e metro (riquadro dei centimetri) ===== */
+  .misura { flex: none; min-width: 104px; height: 56px; border: 2px solid var(--verde); border-radius: 12px; background: var(--verde-tenue); display: flex; align-items: baseline; justify-content: center; gap: 4px; padding-top: 8px; }
+  .misura .num { font-size: 30px; line-height: 1; color: var(--testo); }
+  .misura span:last-child { font-size: 14px; color: var(--verde); font-weight: 600; }
+  .misura.zero .num { color: var(--spento); }
+  .somma { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 10px 34px; font-size: 13px; color: var(--sec); border-bottom: 1px solid var(--linea); }
+  .somma b { color: var(--testo); font-size: 17px; }
+  .finitura { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 6px 0 6px 34px; border-bottom: 1px solid var(--linea); text-align: left; font-size: 13px; color: var(--sec); }
+  .finitura span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .finitura b { color: var(--verde); font-weight: 600; }
+  .finitura .da { color: var(--verde); font-weight: 600; }
+  .finitura i { font-style: normal; color: var(--verde); font-weight: 600; flex: none; }
+  .gruppi-t { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--sec); margin: 14px 0 0; }
+  /* foglio del metro: numero grande, conto, misure tonde, tastierino */
+  .grande { text-align: center; padding: 6px 0 0; }
+  .grande .num { font-size: 64px; line-height: 1; letter-spacing: -0.02em; }
+  .grande .cm { font-size: 22px; color: var(--sec); font-weight: 600; margin-left: 4px; }
+  .conto { text-align: center; font-size: 14px; color: var(--sec); margin: 4px 0 12px; }
+  .conto b { color: var(--testo); font-family: "Barlow Condensed", sans-serif; font-size: 19px; }
+  .rapide { display: flex; gap: 6px; margin-bottom: 8px; }
+  .rapide button { flex: 1; min-height: 44px; border: 1.5px solid var(--linea); border-radius: 10px; font-weight: 600; font-size: 14px; }
+  .rapide button[aria-pressed="true"] { border: 2px solid var(--verde); background: var(--verde-tenue); color: var(--verde); }
+  .tastierino { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .tastierino button { min-height: 52px; border-radius: 10px; background: var(--fondo); font-family: "Barlow Condensed", sans-serif; font-size: 28px; font-weight: 700; }
+  .tastierino button:active { transform: scale(.96); }
+  .tastierino .parola { font-family: Inter, sans-serif; font-size: 15px; font-weight: 600; color: var(--sec); }
+  /* servizi */
+  .info-r { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--linea); }
+  .info-r .etich b { font-size: 16px; }
+  .info-r .imp { font-size: 22px; flex: none; }
+  .nota-r { font-size: 13px; color: var(--sec); padding: 14px 0 4px; }
+  /* riepilogo (direzione B, 24/10): il totale, la riga Risparmi, i due momenti del pagamento; i conti si aprono a richiesta */
+  .risparmio { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 999px; background: var(--verde-tenue); color: var(--verde); font-weight: 600; font-size: 13px; }
+  .riep { padding: 0 18px 12px; }
+  .riep .etichetta { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sec); margin: 14px 0 4px; }
+  .momenti { position: relative; margin-bottom: 6px; }
+  .momenti::before { content: ""; position: absolute; left: 13px; top: 30px; bottom: 30px; width: 2px; background: var(--linea); }
+  .mom { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .mom .pallino { position: relative; z-index: 1; width: 28px; height: 28px; flex: none; border-radius: 50%; border: 2px solid var(--verde); background: var(--bg); color: var(--verde); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .mom.oggi .pallino { background: var(--verde); color: #08130C; }
+  .mom .t { flex: 1; min-width: 0; }
+  .mom .t b { display: block; font-size: 16px; }
+  .mom .t small { color: var(--sec); font-size: 13px; }
+  .mom .v { font-size: 28px; line-height: 1; flex: none; }
+  .mom.oggi .v { color: var(--verde); font-size: 32px; }
+  .apri-conti { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 52px; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); text-align: left; font-size: 14px; color: var(--sec); }
+  .apri-conti span { flex: 1; }
+  .apri-conti b { color: var(--testo); font-weight: 600; }
+  .apri-conti .freccia { width: 20px; height: 20px; flex: none; color: var(--testo); transition: transform .15s; }
+  .apri-conti[aria-expanded="true"] .freccia { transform: rotate(180deg); }
+  .riep .righe { padding: 0; }
+  .riep .conti { padding: 6px 0 10px; border-bottom: 1px solid var(--linea); }
+  /* i conti, dentro la riga che si apre */
+  .conti { padding: 6px 18px 16px; }
+  .conti div { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; font-size: 15px; color: var(--sec); }
+  .conti div b { color: var(--testo); font-family: "Barlow Condensed", sans-serif; font-size: 20px; }
+  .conti .forte { color: var(--testo); font-weight: 600; border-top: 1px solid var(--linea); padding-top: 10px; margin-top: 4px; }
+  .conti .acc { color: var(--verde); font-weight: 600; }
+  .conti .acc b { color: var(--verde); }
+  .pdf-conti { margin-top: 14px; }
+  .pdf-conti div { display: flex; justify-content: space-between; padding: 3px 0; color: #4A4D55; }
+  .pdf-conti div span:last-child { color: #111214; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 14px; }
+  .pdf-acc { margin-top: 10px; padding: 8px 10px; border-radius: 6px; background: #E8F3EC; color: #166534; font-weight: 600; display: flex; justify-content: space-between; }
+  .mano .euro { flex: none; width: 96px; }
+  /* lato destro su computer (direzione B, 24/10): la mazzetta delle finiture della stanza aperta, come si paga, il PDF a richiesta */
+  .mazzetta { display: flex; flex-direction: column; gap: 12px; }
+  .campione { display: block; width: 100%; text-align: left; border-radius: 14px; overflow: hidden; border: 1px solid var(--linea); background: var(--foglio); transition: border-color .15s; }
+  .campione:hover { border-color: var(--verde); }
+  .campione .colore { display: block; height: 92px; position: relative; }
+  .campione .colore span { position: absolute; left: 12px; bottom: 10px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.88); color: #111214; }
+  .campione .info { display: block; padding: 10px 14px 12px; }
+  .campione b { display: block; font-size: 15px; }
+  .campione small { color: var(--sec); font-size: 13px; }
+  .campione.vuoto .colore { height: 56px; background: repeating-linear-gradient(135deg, var(--fondo) 0 8px, var(--foglio) 8px 9px); }
+  .campione.vuoto b { color: var(--sec); }
+  .campione .stanza-c { color: var(--verde); font-weight: 600; }
+  .mazz-vuota { color: var(--sec); font-size: 14px; }
+  .paga-lato { border: 1px solid var(--linea); border-radius: 14px; padding: 10px 14px; margin-top: 16px; }
+  .paga-lato .m { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 14px; }
+  .paga-lato .m span:nth-child(2) { flex: 1; color: var(--sec); }
+  .paga-lato .pall { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 2px solid var(--verde); color: var(--verde); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .paga-lato .oggi .pall { background: var(--verde); color: #08130C; }
+  .paga-lato .num { font-size: 22px; }
+  .paga-lato .oggi .num { color: var(--verde); }
+  .paga-lato[hidden] { display: none; }
+  .link-pdf { margin-top: 14px; min-height: 44px; color: var(--verde); font-weight: 600; font-size: 15px; text-align: left; }
+  /* PDF (direzione B, 24/10): stanza → gruppo con la finitura una volta sola e il campione → i moduli; in fondo come si paga e la firma */
+  .pdf-gr { display: flex; align-items: center; gap: 10px; padding: 8px 0 4px; }
+  .pdf-camp { width: 36px; height: 36px; flex: none; border-radius: 6px; border: 1px solid rgba(0,0,0,.2); }
+  .pdf-camp.vuoto { background: repeating-linear-gradient(135deg, #F5F4F0 0 5px, #E7E5DF 5px 6px); }
+  .pdf-gr b { display: block; font-size: 12.5px; }
+  .pdf-gr small { color: #4A4D55; font-size: 11px; }
+  .pdf-r.figlia { padding-left: 46px; }
+  .pdf-r.figlia small { color: #4A4D55; font-size: 11px; }
+  .pdf-somma { display: flex; justify-content: space-between; padding: 4px 0 7px 46px; color: #4A4D55; font-size: 11px; border-bottom: 1px solid #DEDCD5; }
+  .pdf-risp { display: inline-block; margin-top: 4px; padding: 2px 9px; border-radius: 999px; background: #E8F3EC; color: #166534; font-weight: 600; font-size: 11px; }
+  .pdf-paga { margin-top: 12px; border: 1px solid #DEDCD5; border-radius: 6px; padding: 7px 10px; }
+  .pdf-paga .m { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+  .pdf-paga .m span:nth-child(2) { flex: 1; }
+  .pdf-paga .pall { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 1.5px solid #166534; color: #166534; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .pdf-paga .oggi .pall { background: #166534; color: #fff; }
+  .pdf-paga .num { font-size: 16px; }
+  .pdf-paga .oggi .num { color: #166534; }
+  .pdf-condiz { margin: 10px 0 0 14px; color: #4A4D55; font-size: 11px; }
+  .pdf-firma { display: flex; gap: 16px; margin-top: 22px; }
+  .pdf-firma div { flex: 1; border-top: 1px solid #111214; padding-top: 3px; font-size: 11px; color: #4A4D55; }
+</style>
+</head>
+<body>
+<!-- simboli dei mobili (icone delle tendine) -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="base" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="16" height="10" rx="1"/><path d="M10 7v10M7 11v2M13 11v2M1.5 7h17"/></g></symbol>
+  <symbol id="pensile" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="16" height="9" rx="1"/><path d="M10 3v9M7 9.5v1M13 9.5v1"/></g></symbol>
+  <symbol id="colonna" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="2" width="10" height="16" rx="1"/><path d="M5 9h10M12 5v2M12 12v3"/></g></symbol>
+  <symbol id="top" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 8h16v3H2z"/><path d="M4 11v6M16 11v6"/></g></symbol>
+  <symbol id="elettro" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="1.5"/><path d="M3 7h14"/><rect x="6" y="10" width="8" height="4" rx="1"/></g></symbol>
+  <symbol id="divano" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10V6h12v4"/><path d="M2 10h16v5H2zM3 15v2M17 15v2"/></g></symbol>
+  <symbol id="parete" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="16" height="14" rx="1"/><path d="M2 12h16M8 3v9"/></g></symbol>
+  <symbol id="tavolo" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 8h16M4 8v9M16 8v9"/></g></symbol>
+  <symbol id="sedia" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2v16M6 11h9v7M6 11"/></g></symbol>
+  <symbol id="libreria" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2" width="14" height="16" rx="1"/><path d="M3 7h14M3 12h14"/></g></symbol>
+  <symbol id="letto" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 5v12M2 12h16v5M18 12V9H8v3"/><rect x="3.5" y="8.5" width="3" height="2" rx=".5"/></g></symbol>
+  <symbol id="armadio" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2" width="14" height="16" rx="1"/><path d="M10 2v16M8 9v2M12 9v2"/></g></symbol>
+  <symbol id="comodino" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="6" width="12" height="10" rx="1"/><path d="M4 11h12M9 8.5h2M9 13.5h2M5 16v2M15 16v2"/></g></symbol>
+  <symbol id="lavabo" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 8h16v8H2z"/><path d="M10 8v8M10 4v2M8 4h4"/></g></symbol>
+  <symbol id="specchio" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="2" width="10" height="16" rx="5"/><path d="M8 7l3-3"/></g></symbol>
+  <symbol id="servizi" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 5h10v9h-10zM11.5 8h4l3 3v3h-7"/><circle cx="5" cy="15" r="1.6"/><circle cx="15" cy="15" r="1.6"/></g></symbol>
+  <symbol id="altro" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="4"/><path d="M10 7v6M7 10h6"/></g></symbol>
+</svg>
+
+<div class="app">
+
+  <!-- ===== 1 · Stanze: si compone stanza per stanza ===== -->
+  <section class="schermo" id="schermoS">
+    <div class="testa">
+    <div class="barra">
+      <button class="settori" data-settori hidden>‹ Settori</button>
+      <h1>Nuovo preventivo</h1>
+      <button class="tema" data-tema-tasto aria-label="Cambia colori: chiaro o scuro">
+        <svg class="sole" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+      </button>
+      <button class="prezzi" data-prezzi>Prezzi</button>
+      <button data-ricomincia>Ricomincia</button>
+    </div>
+    <div class="passi" id="passiS"></div>
+    <div class="totale-s">
+      <div class="tot num" id="totaleS">€ 0</div>
+      <small id="sottoS"></small>
+    </div>
+    <div class="schede" id="schede"></div>
+    </div>
+    <div class="corpo"><div class="voci" id="voci"></div></div>
+    <div class="piede">
+      <div class="sub"><span id="subNome"></span><b class="num" id="subPrezzo"></b></div>
+      <button class="btn" id="avanti"></button>
+    </div>
+  </section>
+
+  <!-- ===== 2 · Riepilogo: il totale, l'acconto e l'invio ===== -->
+  <section class="schermo" id="schermoC" hidden>
+    <div class="barra">
+      <button class="settori" data-settori hidden>‹ Settori</button>
+      <h1>Nuovo preventivo</h1>
+      <button class="tema" data-tema-tasto aria-label="Cambia colori: chiaro o scuro">
+        <svg class="sole" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+      </button>
+      <button class="prezzi" data-prezzi>Prezzi</button>
+      <button data-ricomincia>Ricomincia</button>
+    </div>
+    <div class="passi" id="passiC"></div>
+    <div class="numero">
+      <div class="tot num" id="totaleC">€ 0</div>
+      <small id="sintesi"></small>
+      <span class="risparmio" id="risparmio" hidden></span>
+    </div>
+    <div class="corpo"><div class="riep">
+      <p class="etichetta">Come si paga</p>
+      <div class="momenti" id="momenti"></div>
+      <button class="apri-conti" id="apriConti" aria-expanded="false"><span><b>Come si arriva al totale</b> · sconto, montaggio, IVA</span>
+        <svg class="freccia" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="conti" id="conti" hidden></div>
+      <p class="etichetta">Stanze</p>
+      <div class="righe" id="righe"></div>
+    </div></div>
+    <div class="piede">
+      <button class="btn" id="ritocca">Rivedi le stanze</button>
+      <button class="link" id="invia">oppure <b>invia il preventivo</b></button>
+    </div>
+  </section>
+
+  <!-- foglio "prezzi" -->
+  <div class="velo" id="veloP">
+    <div class="foglio">
+      <h2>I tuoi prezzi</h2>
+      <p class="spiega">I prezzi dei mobili vengono dal catalogo delle aziende. Qui sconto, servizi, acconto e IVA.</p>
+      <div id="listaPrezzi"></div>
+      <button class="btn" id="salvaP">Salva prezzi</button>
+      <button class="link" id="annullaP">Annulla</button>
+    </div>
+  </div>
+
+  <!-- foglio "come lo mandi?" -->
+  <div class="velo" id="veloInvio">
+    <div class="foglio">
+      <h2>Come lo mandi?</h2>
+      <div class="canali">
+        <button data-canale="WA"><b>WhatsApp</b><small>Messaggio con il PDF allegato</small></button>
+        <button data-canale="Mail"><b>Email</b><small>Mail con il PDF allegato</small></button>
+        <button data-canale="PDF"><b>Scarica PDF</b><small>Da stampare o mandare a mano</small></button>
+      </div>
+      <button class="link" data-chiudi>Annulla</button>
+    </div>
+  </div>
+
+  <!-- foglio "anteprima email" -->
+  <div class="velo" id="veloMail">
+    <div class="foglio">
+      <h2>Ecco la mail che riceverebbe il tuo cliente</h2>
+      <div class="mail">
+        <div class="mail-testa"><div>A: <b>il tuo cliente</b></div><div>Oggetto: <b id="oggettoMail"></b></div></div>
+        <div class="mail-corpo" id="corpoMail"></div>
+        <div class="mail-alleg" id="allegMail"></div>
+      </div>
+      <p class="nota-demo">Nella demo non parte nessuna mail.</p>
+      <button class="btn-2" data-chiudi>Chiudi</button>
+    </div>
+  </div>
+
+  <!-- foglio "anteprima PDF" -->
+  <div class="velo" id="veloPDF">
+    <div class="foglio">
+      <h2>Ecco il PDF che riceverebbe il tuo cliente</h2>
+      <div class="carta"><div class="pagina-pdf" id="paginaPDF"></div></div>
+      <p class="nota-demo">Nella demo non si scarica nessun file.</p>
+      <button class="btn-2" data-chiudi>Chiudi</button>
+    </div>
+  </div>
+
+  <!-- foglio "anteprima WhatsApp" -->
+  <div class="velo" id="veloWA">
+    <div class="foglio">
+      <h2>Ecco cosa riceverebbe il tuo cliente</h2>
+      <div class="chat"><div class="bolla" id="bollaWA"></div></div>
+      <p class="nota-demo">Nella demo non parte nessun messaggio.</p>
+      <button class="btn-2" id="chiudiWA">Chiudi</button>
+    </div>
+  </div>
+
+  <!-- foglio "che mobile aggiungi?" -->
+  <div class="velo" id="veloComp">
+    <div class="foglio">
+      <h2>Che mobile aggiungi?</h2>
+      <p class="spiega" id="compSpiega"></p>
+      <div class="gia" id="giaComp"></div>
+      <div id="sceltaComp"></div>
+      <div class="mano" id="mano" hidden>
+        <input id="nomeMano" type="text" maxlength="40" placeholder="Nome del mobile" autocomplete="off">
+        <input id="prezzoMano" class="euro" type="text" inputmode="numeric" maxlength="6" placeholder="€" autocomplete="off">
+        <button id="aggMano">Aggiungi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- foglio "che tipo?" (che base, che pensile…) -->
+  <div class="velo" id="veloTipi">
+    <div class="foglio">
+      <div class="testa-foglio"><button class="indietro" id="indietroTipi" aria-label="Indietro">‹</button><h2 id="tipiTitolo"></h2></div>
+      <p class="spiega" id="tipiSpiega"></p>
+      <div class="scelte" id="sceltaTipi"></div>
+    </div>
+  </div>
+
+  <!-- foglio "catalogo": la finitura del gruppo per la stanza aperta -->
+  <div class="velo" id="veloMod">
+    <div class="foglio">
+      <div class="testa-foglio"><button class="indietro" id="indietroCat" aria-label="Indietro">‹</button><h2 id="modTitolo"></h2></div>
+      <p class="spiega" id="modSpiega"></p>
+      <div class="modelli" id="modelli"></div>
+    </div>
+  </div>
+
+  <!-- foglio "metro": i centimetri con il tastierino -->
+  <div class="velo" id="veloMis">
+    <div class="foglio">
+      <h2 id="misTitolo"></h2>
+      <p class="spiega" id="misSpiega"></p>
+      <div class="grande"><span class="num" id="misNum">0</span><span class="cm">cm</span></div>
+      <div class="conto" id="misConto"></div>
+      <div class="rapide" id="misRapide"></div>
+      <div class="tastierino" id="misTasti"></div>
+      <button class="btn" id="misFatto" style="margin-top:10px">Fatto</button>
+    </div>
+  </div>
+
+  <!-- foglio "nuova stanza" -->
+  <div class="velo" id="velo">
+    <div class="foglio">
+      <h2>Che stanza aggiungi?</h2>
+      <div class="scelte" id="scelte"></div>
+      <div class="mano" id="manoStanza" hidden>
+        <input id="nomeStanza" type="text" maxlength="30" placeholder="Nome della stanza" autocomplete="off">
+        <button id="aggStanza">Aggiungi</button>
+      </div>
+    </div>
+  </div>
+</div>
+<aside class="lato sx compatto">
+    <div class="marchio"><i></i>GPN Lab</div>
+    <h2>Il preventivo dell'arredamento, dal telefono.</h2>
+    <p class="frase">Dal rilievo al preventivo in pochi minuti: componi i mobili, scegli le finiture con il cliente e lo mandi.</p>
+    <ul class="vantaggi">
+      <li><button class="vant-btn" data-apri-cat><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><div><b>Il catalogo delle aziende</b><small>Il cliente sceglie azienda e finitura, con foto e prezzo.</small></div><span class="vai">›</span></button></li>
+      <li><button class="vant-btn" data-apri-invio><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></span><div><b>Lo mandi subito</b><small>WhatsApp, email o PDF, appena hai finito.</small></div><span class="vai">›</span></button></li>
+    </ul>
+    <p class="etichetta" style="margin-top:32px">Le stanze del preventivo</p>
+    <div class="stanze-lato" id="stanzeLato"></div>
+    <p class="piede-lato">Demo: aziende, prodotti e prezzi di prova.</p>
+  </aside>
+<aside class="lato dx">
+    <p class="etichetta" id="mazzTitolo"></p>
+    <div class="mazzetta" id="mazzetta"></div>
+    <div class="paga-lato" id="pagaLato"></div>
+    <button class="link-pdf" data-apri-pdf-lato>Vedi il PDF ›</button>
+  </aside>
+<div class="velo" id="veloCatTutto">
+    <div class="finestra">
+      <div class="testa-f"><h2>Catalogo completo</h2><button class="chiudi-f" data-chiudi-cat>Chiudi</button></div>
+      <p class="avviso-cat">Foto, marche e codici di prova: qui andrà il catalogo dell'azienda.</p>
+      <div id="corpoCatTutto"></div>
+    </div>
+  </div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- Prezzi: sconto, servizi, acconto e IVA (i mobili hanno il prezzo del catalogo). Si cambiano da "Prezzi" ----
+const PREZZI = { sconto: 10, montaggio: 8, salita: 60, smontaggio: 200, rilievo: 0, acconto: 30, iva: 22, consegna: 8, validita: 30 };
+const LISTINO = [
+  { k: "sconto",     nome: "Sconto sul listino",            u: "%" },
+  { k: "montaggio",  nome: "Trasporto e montaggio",         u: "%" },
+  { k: "salita",     nome: "Salita al piano senza ascensore", u: "€" },
+  { k: "smontaggio", nome: "Smontaggio e smaltimento",      u: "€" },
+  { k: "rilievo",    nome: "Rilievo misure",                u: "€" },
+  { k: "acconto",    nome: "Acconto alla firma",            u: "%" },
+  { k: "iva",        nome: "IVA",                           u: "%" },
+  { k: "consegna",   nome: "Consegna entro",                u: "sett." },
+  { k: "validita",   nome: "Offerta valida",                u: "giorni" },
+];
+const SERVIZI = [
+  { k: "salita",     nome: "Salita al piano",          nota: "senza ascensore" },
+  { k: "smontaggio", nome: "Smontaggio e smaltimento", nota: "dei mobili vecchi" },
+  { k: "rilievo",    nome: "Rilievo misure",           nota: "sopralluogo a casa" },
+];
+
+// Gruppi (le tendine) e in quali stanze compaiono per primi. fam = quale catalogo di finiture usa
+const GRUPPI = [
+  { k: "basi",     nome: "Basi",                domanda: "Che base ti serve?",       sim: "base",     fam: "mobili", stanze: ["cucina"] },
+  { k: "pensili",  nome: "Pensili",             domanda: "Che pensile ti serve?",    sim: "pensile",  fam: "mobili", stanze: ["cucina"] },
+  { k: "colonne",  nome: "Colonne",             domanda: "Che colonna ti serve?",    sim: "colonna",  fam: "mobili", stanze: ["cucina"] },
+  { k: "top",      nome: "Top",                 domanda: "Che piano di lavoro?",     sim: "top",      fam: "top",    stanze: ["cucina"] },
+  { k: "elettro",  nome: "Elettrodomestici",    domanda: "Che elettrodomestico?",    sim: "elettro",  fam: "elettro", stanze: ["cucina"] },
+  { k: "divani",   nome: "Divani",              domanda: "Che divano?",              sim: "divano",   fam: "imbottiti", stanze: ["soggiorno"] },
+  { k: "parete",   nome: "Parete attrezzata",   domanda: "Cosa serve per la parete?", sim: "parete",  fam: "mobili", stanze: ["soggiorno"] },
+  { k: "tavoli",   nome: "Tavoli",              domanda: "Che tavolo?",              sim: "tavolo",   fam: "mobili", stanze: ["soggiorno", "cucina"] },
+  { k: "sedie",    nome: "Sedie",               domanda: "Che seduta?",              sim: "sedia",    fam: "mobili", stanze: ["soggiorno", "cucina"] },
+  { k: "librerie", nome: "Librerie",            domanda: "Libreria o mensole?",      sim: "libreria", fam: "mobili", stanze: ["soggiorno"] },
+  { k: "letti",    nome: "Letti",               domanda: "Che letto?",               sim: "letto",    fam: "imbottiti", stanze: ["camera"] },
+  { k: "armadi",   nome: "Armadi",              domanda: "Che armadio?",             sim: "armadio",  fam: "mobili", stanze: ["camera"] },
+  { k: "comodini", nome: "Comodini e cassettiere", domanda: "Che mobile?",           sim: "comodino", fam: "mobili", stanze: ["camera"] },
+  { k: "lavabo",   nome: "Mobile lavabo",       domanda: "Che mobile lavabo?",       sim: "lavabo",   fam: "mobili", stanze: ["bagno"] },
+  { k: "specchi",  nome: "Specchi e colonne",   domanda: "Specchio o colonna?",      sim: "specchio", fam: "mobili", stanze: ["bagno"] },
+];
+const GR = Object.fromEntries(GRUPPI.map(g => [g.k, g]));
+// Tipi: conta "pezzi" (− / +; l = larghezza del modulo in cm, per la somma dei metri) o "metro" (centimetri, prezzo al metro).
+// Prezzi di partenza (prima finitura dell'Azienda 1), IVA esclusa: finti, solo per riempire la demo
+const TIPI = [
+  { k: "b30",   g: "basi", corto: "Base 30 cm",        l: 30, prezzo: 170 },
+  { k: "b45",   g: "basi", corto: "Base 45 cm",        l: 45, prezzo: 220 },
+  { k: "b60",   g: "basi", corto: "Base 60 cm",        l: 60, prezzo: 260 },
+  { k: "b90",   g: "basi", corto: "Base 90 cm",        l: 90, prezzo: 360 },
+  { k: "lav60", g: "basi", corto: "Lavello 60 cm",     l: 60, prezzo: 290 },
+  { k: "lav90", g: "basi", corto: "Lavello 90 cm",     l: 90, prezzo: 380 },
+  { k: "cas45", g: "basi", corto: "Cassettiera 45 cm", l: 45, prezzo: 300 },
+  { k: "cas60", g: "basi", corto: "Cassettiera 60 cm", l: 60, prezzo: 350 },
+  { k: "ang90", g: "basi", corto: "Base ad angolo 90 cm", l: 90, prezzo: 420 },
+  { k: "p30",   g: "pensili", corto: "Pensile 30 cm", l: 30, prezzo: 110 },
+  { k: "p45",   g: "pensili", corto: "Pensile 45 cm", l: 45, prezzo: 140 },
+  { k: "p60",   g: "pensili", corto: "Pensile 60 cm", l: 60, prezzo: 170 },
+  { k: "p90",   g: "pensili", corto: "Pensile 90 cm", l: 90, prezzo: 230 },
+  { k: "psc60", g: "pensili", corto: "Scolapiatti 60 cm", l: 60, prezzo: 200 },
+  { k: "cforno", g: "colonne", corto: "Colonna forno 60 cm",    l: 60, prezzo: 520 },
+  { k: "cfrigo", g: "colonne", corto: "Colonna frigo 60 cm",    l: 60, prezzo: 560 },
+  { k: "cdisp",  g: "colonne", corto: "Colonna dispensa 45 cm", l: 45, prezzo: 480 },
+  { k: "top",   g: "top", corto: "Top", conta: "metro", prezzo: 150, rapide: [120, 180, 240, 300, 360] },
+  { k: "alzata", g: "top", corto: "Alzatina", conta: "metro", prezzo: 40, rapide: [120, 180, 240, 300, 360] },
+  { k: "forno",  g: "elettro", corto: "Forno",               prezzo: 420 },
+  { k: "piano",  g: "elettro", corto: "Piano a induzione",   prezzo: 480 },
+  { k: "frigo",  g: "elettro", corto: "Frigorifero da incasso", prezzo: 750 },
+  { k: "lavast", g: "elettro", corto: "Lavastoviglie",       prezzo: 450 },
+  { k: "cappa",  g: "elettro", corto: "Cappa",               prezzo: 230 },
+  { k: "div2",  g: "divani", corto: "Divano 2 posti", prezzo: 750 },
+  { k: "div3",  g: "divani", corto: "Divano 3 posti", prezzo: 950 },
+  { k: "divang", g: "divani", corto: "Divano angolare", prezzo: 1600 },
+  { k: "pareteM", g: "parete", corto: "Parete attrezzata", conta: "metro", prezzo: 420, rapide: [180, 240, 300, 360, 420] },
+  { k: "mtv",   g: "parete", corto: "Mobile TV", prezzo: 380 },
+  { k: "tav4",  g: "tavoli", corto: "Tavolo 4 posti", prezzo: 320 },
+  { k: "tavall", g: "tavoli", corto: "Tavolo allungabile", prezzo: 520 },
+  { k: "sedia", g: "sedie", corto: "Sedia", prezzo: 70 },
+  { k: "sgab",  g: "sedie", corto: "Sgabello", prezzo: 85 },
+  { k: "libM",  g: "librerie", corto: "Libreria", conta: "metro", prezzo: 260, rapide: [80, 120, 160, 200, 240] },
+  { k: "mens",  g: "librerie", corto: "Mensola", conta: "metro", prezzo: 60, rapide: [60, 80, 100, 120, 150] },
+  { k: "letS",  g: "letti", corto: "Letto singolo", prezzo: 380 },
+  { k: "letM",  g: "letti", corto: "Letto matrimoniale", prezzo: 650 },
+  { k: "letC",  g: "letti", corto: "Letto contenitore", prezzo: 900 },
+  { k: "anta50", g: "armadi", corto: "Anta battente 50 cm", l: 50, prezzo: 260 },
+  { k: "anta100", g: "armadi", corto: "Anta scorrevole 100 cm", l: 100, prezzo: 520 },
+  { k: "armM",  g: "armadi", corto: "Armadio su misura", conta: "metro", prezzo: 650, rapide: [150, 200, 250, 300, 350] },
+  { k: "comod", g: "comodini", corto: "Comodino", prezzo: 140 },
+  { k: "cass",  g: "comodini", corto: "Cassettiera", prezzo: 380 },
+  { k: "ml60",  g: "lavabo", corto: "Mobile lavabo 60 cm", l: 60, prezzo: 360 },
+  { k: "ml80",  g: "lavabo", corto: "Mobile lavabo 80 cm", l: 80, prezzo: 420 },
+  { k: "ml100", g: "lavabo", corto: "Mobile lavabo 100 cm", l: 100, prezzo: 490 },
+  { k: "spec",  g: "specchi", corto: "Specchio", prezzo: 90 },
+  { k: "specC", g: "specchi", corto: "Specchio contenitore", prezzo: 180 },
+  { k: "colB",  g: "specchi", corto: "Colonna bagno", prezzo: 220 },
+];
+TIPI.forEach(t => { t.nome = t.corto; t.sim = GR[t.g].sim; t.conta = t.conta || "pezzi"; });
+const CATALOGO = [];   // mobili scritti a mano ("+ Altro"): a pezzi, con il prezzo scritto lì
+const COMP = Object.fromEntries(TIPI.map(t => [t.k, t]));
+const aMetro = k => COMP[k]?.conta === "metro";
+
+// ---- Catalogo: tre aziende finte, due finiture ciascuna per famiglia. x = quanto costa rispetto al prezzo di partenza ----
+const AZIENDE = ["Azienda 1", "Azienda 2", "Azienda 3"];
+const MARCHE = ["Marca A", "Marca B", "Marca C"];   // finte: per ora un'azienda = una marca
+const FINITURE = {
+  mobili: [
+    [{ nome: "Liscia", fin: "Laminato bianco", x: 1,    colore: "#F4F3EF", segno: "#9A9DA4" },
+     { nome: "Liscia", fin: "Laminato rovere", x: 1.15, colore: "#C8A27A", segno: "#7A5A3A" }],
+    [{ nome: "Liscia", fin: "Laccato opaco",   x: 1.45, colore: "#E7E3DA", segno: "#8C8F98" },
+     { nome: "Telaio", fin: "Laccato salvia",  x: 1.6,  colore: "#A7B59B", segno: "#5E6B55" }],
+    [{ nome: "Gola",   fin: "Fenix nero",      x: 1.75, colore: "#232427", segno: "#8C8F98" },
+     { nome: "Doga",   fin: "Noce canaletto",  x: 1.9,  colore: "#6B4A33", segno: "#3E2A1D" }],
+  ],
+  top: [
+    [{ nome: "Top", fin: "Laminato bianco",  x: 1,   colore: "#F4F3EF", segno: "#9A9DA4" },
+     { nome: "Top", fin: "Laminato cemento", x: 1.1, colore: "#B7B4AE", segno: "#7D7A74" }],
+    [{ nome: "Top", fin: "Quarzo bianco",    x: 3,   colore: "#FAFAF8", segno: "#C9C7C1" },
+     { nome: "Top", fin: "Quarzo grigio",    x: 3.2, colore: "#8E9096", segno: "#5D5F64" }],
+    [{ nome: "Top", fin: "Acciaio",          x: 2.6, colore: "#C9CDD2", segno: "#8C9096" },
+     { nome: "Top", fin: "Marmo di Carrara", x: 4,   colore: "#F1F0EC", segno: "#B9B7B0" }],
+  ],
+  elettro: [
+    [{ nome: "Linea Base",   fin: "Bianco", x: 1,   colore: "#F4F3EF", segno: "#4A4D55" },
+     { nome: "Linea Base",   fin: "Inox",   x: 1.2, colore: "#C9CDD2", segno: "#4A4D55" }],
+    [{ nome: "Linea Classe A", fin: "Inox",   x: 1.5, colore: "#C9CDD2", segno: "#111214" },
+     { nome: "Linea Classe A", fin: "Nero",   x: 1.6, colore: "#232427", segno: "#C9CDD2" }],
+    [{ nome: "Linea Pro",    fin: "Inox spazzolato", x: 2.2, colore: "#B8BCC2", segno: "#111214" },
+     { nome: "Linea Design", fin: "Vetro nero",      x: 2.6, colore: "#151618", segno: "#8C8F98" }],
+  ],
+  imbottiti: [
+    [{ nome: "Linea Casa",   fin: "Tessuto grigio",  x: 1,   colore: "#A3A5AA", segno: "#6B6E75" },
+     { nome: "Linea Casa",   fin: "Tessuto sabbia",  x: 1.1, colore: "#D6C7AE", segno: "#9C8B70" }],
+    [{ nome: "Linea Morbida", fin: "Velluto verde",  x: 1.5, colore: "#3F6B55", segno: "#24412F" },
+     { nome: "Linea Morbida", fin: "Velluto blu",    x: 1.55, colore: "#34466B", segno: "#1E2A42" }],
+    [{ nome: "Linea Pelle",  fin: "Pelle cuoio",     x: 2.2, colore: "#8A5A35", segno: "#5A3820" },
+     { nome: "Linea Pelle",  fin: "Pelle nera",      x: 2.3, colore: "#1F2023", segno: "#55585F" }],
+  ],
+};
+const MOD = {};   // id → finitura
+Object.entries(FINITURE).forEach(([f, az]) => az.forEach((lista, a) => lista.forEach((m, n) => { m.id = `${f}-${a}-${n}`; m.az = a; MOD[m.id] = m; })));
+const finDi = (s, g) => (s.fin[g] && MOD[s.fin[g]]) || null;
+const sceltoTxt = m => `${AZIENDE[m.az]} · ${m.nome} ${m.fin.toLowerCase()}`;
+// prezzo di un tipo nella stanza: prezzo di partenza × finitura del gruppo (senza finitura: prezzo di partenza)
+const prezzoDi = (s, k) => COMP[k].mano ? COMP[k].prezzo : Math.round(COMP[k].prezzo * (finDi(s, COMP[k].g)?.x || 1));
+const NUOVE = ["Soggiorno", "Camera", "Cameretta", "Bagno", "Ingresso", "Studio", "Esterno"];
+const tipoStanza = nome => { const n = nome.toLowerCase();
+  return n.startsWith("cucin") ? "cucina" : n.startsWith("soggiorn") || n.startsWith("ingress") || n.startsWith("studio") ? "soggiorno"
+       : n.startsWith("camer") ? "camera" : n.startsWith("bagn") ? "bagno" : ""; };
+
+// ---- Stato del preventivo: si parte dalla Cucina vuota ----
+let stato = null;
+let aperta = 0;            // scheda aperta: indice della stanza, oppure "servizi"
+let avvisoTogli = false;   // l'avviso "tocca il nome…" compare una volta sola
+const vuota = nome => ({ nome, voci: [], fin: {}, aperti: {} });   // fin: finitura per gruppo; aperti: tendine aperte
+function nuovo() {
+  stato = { salita: 0, smontaggio: 0, rilievo: 0, toccato: false, stanze: [vuota("Cucina")] };
+  aperta = 0;
+}
+
+const importo = (s, k) => aMetro(k) ? Math.round(s[k] / 100 * prezzoDi(s, k)) : s[k] * prezzoDi(s, k);
+const costo = s => s.voci.reduce((t, k) => t + importo(s, k), 0);
+const pezzi = s => s.voci.reduce((t, k) => t + (aMetro(k) ? (s[k] > 0 ? 1 : 0) : s[k]), 0);
+const fornitura = () => stato.stanze.reduce((t, s) => t + costo(s), 0);
+const sconto = () => Math.round(fornitura() * PREZZI.sconto / 100);
+const montaggio = () => Math.round((fornitura() - sconto()) * PREZZI.montaggio / 100);
+const servizi = () => SERVIZI.reduce((t, x) => t + stato[x.k] * PREZZI[x.k], 0);
+const imponibile = () => fornitura() - sconto() + montaggio() + servizi();
+const iva = () => Math.round(imponibile() * PREZZI.iva / 100);
+const totale = () => imponibile() + iva();
+const acconto = () => Math.round(totale() * PREZZI.acconto / 100);
+const pezziTot = () => stato.stanze.reduce((t, s) => t + pezzi(s), 0);
+const stanzeTxt = n => n === 1 ? "1 stanza" : `${n} stanze`;
+const pezziTxt = n => n === 1 ? "1 pezzo" : `${n} pezzi`;
+const metri = cm => (cm / 100).toFixed(2).replace(".", ",") + " m";
+// punto delle migliaia sempre (il browser in italiano lo salta sotto i 10.000)
+const euro = n => (n < 0 ? "− " : "") + "€ " + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+// Il numero conta fino al nuovo valore: si vede che è cambiato e di quanto
+let mostrato = 0, anim = null;
+function animaTotale(fine, id) {
+  cancelAnimationFrame(anim);
+  const el = document.getElementById(id);
+  const inizio = mostrato, t0 = performance.now(), durata = 350;
+  if (inizio === fine) { el.textContent = euro(fine); return; }
+  const passo = t => {
+    const k = Math.min(1, (t - t0) / durata), e = 1 - Math.pow(1 - k, 3);
+    mostrato = Math.round(inizio + (fine - inizio) * e);
+    el.textContent = euro(mostrato);
+    if (k < 1) anim = requestAnimationFrame(passo);
+  };
+  anim = requestAnimationFrame(passo);
+}
+
+function passi(n) {
+  return ["1 Stanze", "2 Riepilogo"].map((t, i) =>
+    `<span class="${i + 1 === n ? "on" : i + 1 < n ? "fatto" : ""}">${t}</span>`).join("");
+}
+
+// ---------- 1 · Stanze ----------
+function disegnaS(scorri) {
+  document.getElementById("passiS").innerHTML = passi(1);
+  animaTotale(totale(), "totaleS");
+  document.getElementById("sottoS").textContent = `${pezziTxt(pezziTot())} · ${stanzeTxt(stato.stanze.length)} · IVA inclusa`;
+
+  // schede: le stanze, poi "Servizi", poi +
+  const schede = document.getElementById("schede");
+  schede.innerHTML =
+    stato.stanze.map((s, i) => `<button class="scheda ${aperta === i ? "on" : ""}" data-i="${i}">${s.nome}</button>`).join("") +
+    `<button class="scheda ${aperta === "servizi" ? "on" : ""}" data-i="servizi">Servizi</button>` +
+    `<button class="scheda piu" id="aggiungi" aria-label="Aggiungi stanza">+</button>`;
+  if (scorri) schede.querySelector(".scheda.on")?.scrollIntoView({ inline: "center", block: "nearest" });
+
+  const voci = document.getElementById("voci");
+  if (aperta === "servizi") {
+    // trasporto e montaggio è una percentuale: niente − / +, si cambia da "Prezzi"
+    voci.innerHTML =
+      `<div class="info-r"><svg class="sim"><use href="#servizi"/></svg><div class="etich"><b>Trasporto e montaggio</b><small>${PREZZI.montaggio}% della fornitura scontata · si cambia da "Prezzi"</small></div><span class="imp num">${euro(montaggio())}</span></div>` +
+      SERVIZI.map(x => riga(x.k, x.nome, (PREZZI[x.k] ? euro(PREZZI[x.k]) : "gratis") + " · " + x.nota, "servizi", stato[x.k], stato[x.k] === 0, stato[x.k] === 1)).join("") +
+      `<p class="nota-r">Allacci di acqua, luce e gas esclusi: li fanno idraulico ed elettricista.</p>`;
+    document.getElementById("subNome").textContent = "Servizi";
+    document.getElementById("subPrezzo").textContent = euro(montaggio() + servizi());
+    document.getElementById("avanti").textContent = "Avanti: Riepilogo →";
+  } else {
+    const s = stato.stanze[aperta];
+    const rigaDi = k => {
+      const c = COMP[k];
+      if (aMetro(k)) return rigaMetro(s, k);
+      return riga(k, c.corto, `${euro(prezzoDi(s, k))} ${c.mano ? "l'uno" : c.l ? "l'uno" : "l'uno"}`, c.sim, s[k], s[k] === 0, false, true, true);
+    };
+    // tendina: chiusa mostra i tipi in breve; aperta la finitura, le righe dei tipi e la somma dei metri
+    const gruppo = g => {
+      const tipi = s.voci.filter(k => COMP[k].g === g.k), aperto = s.aperti[g.k];
+      if (!tipi.length) return "";            // la stanza parte vuota: la tendina compare quando ha qualcosa dentro
+      const breve = tipi.map(k => aMetro(k) ? `${COMP[k].corto} ${metri(s[k])}` : `${COMP[k].corto.replace(" cm", "")} ${s[k]}`).join(" · ");
+      const f = finDi(s, g.k);
+      const larghi = tipi.filter(k => COMP[k].l), cm = larghi.reduce((t, k) => t + COMP[k].l * s[k], 0), nmod = larghi.reduce((t, k) => t + s[k], 0);
+      const gcosto = tipi.reduce((t, k) => t + importo(s, k), 0);
+      return `<div class="gruppo"><button class="apri" data-tendina="${g.k}" aria-expanded="${!!aperto}">
+          <svg class="sim"><use href="#${g.sim}"/></svg>
+          <span class="etich"><b>${g.nome}</b><small>${breve}</small></span>
+          <svg class="freccia" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="tipo-piu" data-tipi="${g.k}">+ Tipo</button></div>` +
+        (aperto ? `<button class="finitura" data-fin="${g.k}"><span>${f ? `<b>${sceltoTxt(f)}</b>` : `<span class="da">Finitura da scegliere</span>`}</span><i>Catalogo ›</i></button>` +
+          tipi.map(rigaDi).join("") +
+          (larghi.length ? `<div class="somma"><span>${nmod === 1 ? "1 modulo" : nmod + " moduli"} · <b class="num">${metri(cm)}</b></span><span>${g.nome} <b class="num">${euro(gcosto)}</b></span></div>` : "")
+        : "");
+    };
+    const mano = s.voci.filter(k => COMP[k].mano);
+    voci.innerHTML =
+      (s.voci.length ? "" : `<p class="vuota-stanza">Stanza vuota: aggiungi i mobili che ti servono.</p>`) +
+      GRUPPI.map(gruppo).join("") +
+      mano.map(k => riga(k, COMP[k].nome, `${euro(COMP[k].prezzo)} l'uno`, "altro", s[k], s[k] === 0, false, true)).join("") +
+      `<button class="agg-comp" id="aggComp">+ Aggiungi mobile</button>` +
+      `<button class="togli" id="togli">Togli questa stanza</button>`;
+    document.getElementById("subNome").textContent = `${s.nome} · ${pezziTxt(pezzi(s))}`;
+    document.getElementById("subPrezzo").textContent = euro(costo(s));
+    const dopo = aperta + 1 < stato.stanze.length ? stato.stanze[aperta + 1].nome : "Servizi";
+    document.getElementById("avanti").textContent = `Avanti: ${dopo} →`;
+  }
+}
+
+// riga a pezzi: toccando il nome si apre il catalogo del gruppo (lì c'è anche "Togli")
+function riga(k, nome, sotto, sim, q, menoSpento, piuSpento, cat, figlia) {
+  return `<div class="voce ${figlia ? "figlia" : ""}">${figlia ? "" : `<svg class="sim"><use href="#${sim}"/></svg>`}
+    <div class="etich" ${cat ? `data-cat="${k}"` : ""}><b>${nome}</b><small>${sotto}</small></div>
+    <button class="tasto" data-k="${k}" data-d="-1" ${menoSpento ? "disabled" : ""} aria-label="Togli">−</button>
+    <div class="q num ${q === 0 ? "zero" : ""}" id="q-${k}">${q}</div>
+    <button class="tasto" data-k="${k}" data-d="1" ${piuSpento ? "disabled" : ""} aria-label="Aggiungi">+</button></div>`;
+}
+// riga a metro: al posto di − / + il riquadro verde con i centimetri
+function rigaMetro(s, k) {
+  return `<div class="voce figlia"><div class="etich" data-cat="${k}"><b>${COMP[k].corto}</b><small>${euro(prezzoDi(s, k))} al metro · ${euro(importo(s, k))}</small></div>
+    <button class="misura ${s[k] ? "" : "zero"}" data-mis="${k}" aria-label="Cambia la misura"><span class="num" id="q-${k}">${s[k]}</span><span>cm</span></button></div>`;
+}
+
+function cambia(k, d) {
+  if (aperta === "servizi") stato[k] = Math.min(1, Math.max(0, stato[k] + d));
+  else { const s = stato.stanze[aperta]; s[k] = Math.max(0, s[k] + d); }
+  stato.toccato = true;
+  disegnaS(false);
+  const q = document.getElementById("q-" + k);
+  if (q) { q.classList.remove("batte"); void q.offsetWidth; q.classList.add("batte"); }
+}
+
+// ---------- 2 · Riepilogo ----------
+function contiRighe() {
+  return [
+    ["Fornitura", euro(fornitura())],
+    ...(sconto() ? [[`Sconto ${PREZZI.sconto}%`, euro(-sconto())]] : []),
+    [`Trasporto e montaggio ${PREZZI.montaggio}%`, euro(montaggio())],
+    ...SERVIZI.filter(x => stato[x.k]).map(x => [x.nome, PREZZI[x.k] ? euro(PREZZI[x.k]) : "gratis"]),
+    ["Imponibile", euro(imponibile()), "forte"],
+    [`IVA ${PREZZI.iva}%`, euro(iva())],
+  ];
+}
+// quanto costerebbe senza sconto (stesso montaggio in percentuale, stessi servizi, IVA): la differenza è il risparmio
+const risparmio = () => {
+  const f = fornitura(), senza = f + Math.round(f * PREZZI.montaggio / 100) + servizi();
+  return senza + Math.round(senza * PREZZI.iva / 100) - totale();
+};
+const consegnaTxt = () => PREZZI.consegna ? ` · entro ${PREZZI.consegna} ${PREZZI.consegna === 1 ? "settimana" : "settimane"}` : "";
+let contiAperti = false;
+function disegnaC() {
+  document.getElementById("passiC").innerHTML = passi(2);
+  animaTotale(totale(), "totaleC");
+  document.getElementById("sintesi").textContent = `${pezziTxt(pezziTot())} · ${stanzeTxt(stato.stanze.length)} · IVA inclusa`;
+  // la riga Risparmi (dalla direzione C) c'è solo quando c'è uno sconto
+  const r = document.getElementById("risparmio");
+  r.hidden = !(sconto() > 0);
+  r.textContent = `Risparmi ${euro(risparmio())} con lo sconto del ${PREZZI.sconto}%`;
+  // i due momenti: pallino pieno = oggi, pallino vuoto = dopo
+  document.getElementById("momenti").innerHTML =
+    `<div class="mom oggi"><span class="pallino">1</span><div class="t"><b>Alla firma</b><small>Acconto ${PREZZI.acconto}%</small></div><span class="v num">${euro(acconto())}</span></div>` +
+    `<div class="mom"><span class="pallino">2</span><div class="t"><b>Alla consegna</b><small>Saldo, a montaggio finito${consegnaTxt()}</small></div><span class="v num">${euro(totale() - acconto())}</span></div>`;
+  document.getElementById("apriConti").setAttribute("aria-expanded", contiAperti);
+  const conti = document.getElementById("conti");
+  conti.hidden = !contiAperti;
+  conti.innerHTML =
+    contiRighe().map(([a, b, c]) => `<div class="${c || ""}"><span>${a}</span><b>${b}</b></div>`).join("") +
+    `<div class="forte"><span>Totale</span><b>${euro(totale())}</b></div>`;
+  document.getElementById("righe").innerHTML =
+    stato.stanze.map((s, i) => `<div class="riga"><span class="nome">${s.nome}</span><span class="p">${pezziTxt(pezzi(s))} · ${euro(costo(s))}</span><button class="cambia" data-stanza="${i}">Cambia</button></div>`).join("") +
+    `<div class="riga"><span class="nome">Servizi</span><span class="p">${euro(montaggio() + servizi())}</span><button class="cambia" data-stanza="servizi">Cambia</button></div>`;
+}
+
+// ---------- navigazione ----------
+function vai(schermo) {
+  document.getElementById("schermoS").hidden = schermo !== "S";
+  document.getElementById("schermoC").hidden = schermo !== "C";
+  if (schermo === "S") disegnaS(true); else disegnaC();
+  window.scrollTo(0, 0);
+}
+function apri(i) { aperta = i; vai("S"); }
+function ridisegna() { if (document.getElementById("schermoS").hidden) disegnaC(); else disegnaS(false); }
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove("on"), msg.length > 40 ? 3500 : 2200);
+}
+
+document.querySelectorAll("[data-ricomincia]").forEach(b => b.addEventListener("click", () => {
+  if (stato.toccato && !confirm("Ricominciare da capo? I mobili inseriti si perdono.")) return;
+  nuovo(); vai("S");
+}));
+
+// ---- Arrivo dalla schermata "Seleziona il settore" (?da=settori): compare "‹ Settori" e si tengono i colori scelti lì ----
+(() => {
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("tema") === "chiaro") document.documentElement.dataset.tema = "chiaro";
+  if (qs.get("da") !== "settori") return;
+  document.querySelectorAll(".barra h1").forEach(h => { if (h.textContent === "Nuovo preventivo") h.textContent = "Preventivo"; });
+  document.querySelectorAll("[data-settori]").forEach(b => {
+    b.hidden = false;
+    b.addEventListener("click", () => history.length > 1 ? history.back() : (location.href = document.referrer || "../"));
+  });
+})();
+
+// ---- Colori: scuro (come l'Ingrosso) o chiaro (al sole); resta fino al ricaricare ----
+document.querySelectorAll("[data-tema-tasto]").forEach(b => b.addEventListener("click", () => {
+  const h = document.documentElement;
+  h.dataset.tema = h.dataset.tema === "chiaro" ? "scuro" : "chiaro";
+}));
+
+// ---- Prezzi ----
+document.querySelectorAll("[data-prezzi]").forEach(b => b.addEventListener("click", () => {
+  document.getElementById("listaPrezzi").innerHTML = LISTINO.map(v =>
+    `<div class="prezzo"><label for="p-${v.k}">${v.nome}</label>
+      <div class="campo">${v.u === "€" ? "<span>€</span>" : ""}<input id="p-${v.k}" data-k="${v.k}" type="text" inputmode="numeric" value="${PREZZI[v.k]}">${v.u !== "€" ? `<span>&nbsp;${v.u}</span>` : ""}</div></div>`).join("");
+  document.getElementById("veloP").classList.add("on");
+}));
+document.getElementById("salvaP").addEventListener("click", () => {
+  document.querySelectorAll("#listaPrezzi input").forEach(i => {
+    const n = parseInt(i.value.replace(/\D/g, ""), 10);
+    PREZZI[i.dataset.k] = Number.isFinite(n) ? (LISTINO.find(v => v.k === i.dataset.k).u === "%" ? Math.min(n, 100) : n) : 0;
+  });
+  document.getElementById("veloP").classList.remove("on");
+  ridisegna();
+  toast("Prezzi aggiornati.");
+});
+document.getElementById("annullaP").addEventListener("click", () => document.getElementById("veloP").classList.remove("on"));
+document.getElementById("veloP").addEventListener("click", e => { if (e.target.id === "veloP") e.currentTarget.classList.remove("on"); });
+
+// ---- Eventi · Stanze ----
+document.getElementById("schede").addEventListener("click", e => {
+  const b = e.target.closest(".scheda"); if (!b) return;
+  if (b.id === "aggiungi") return apriFoglio();
+  aperta = b.dataset.i === "servizi" ? "servizi" : Number(b.dataset.i);
+  disegnaS(true);
+});
+document.getElementById("voci").addEventListener("click", e => {
+  const tp = e.target.closest("[data-tipi]");
+  if (tp) return apriTipi(tp.dataset.tipi);
+  const td = e.target.closest("[data-tendina]");
+  if (td) { const a = stato.stanze[aperta].aperti; a[td.dataset.tendina] = !a[td.dataset.tendina]; return disegnaS(false); }
+  const fn = e.target.closest("[data-fin]");
+  if (fn) { catDaTipi = false; return apriCat(fn.dataset.fin); }
+  const ms = e.target.closest("[data-mis]");
+  if (ms) return apriMis(ms.dataset.mis);
+  const c = e.target.closest("[data-cat]");
+  if (c) { catDaTipi = false; const k = c.dataset.cat; return COMP[k].mano ? apriMano(k) : apriCat(COMP[k].g, k); }
+  const t = e.target.closest(".tasto");
+  if (t && !t.disabled) return cambia(t.dataset.k, Number(t.dataset.d));
+  if (e.target.closest("#aggComp")) return apriComp();
+  if (e.target.closest("#togli")) {
+    const nome = stato.stanze[aperta].nome;
+    if (stato.stanze.length === 1) return toast("Serve almeno una stanza.");
+    stato.stanze.splice(aperta, 1);
+    stato.toccato = true;
+    aperta = Math.min(aperta, stato.stanze.length - 1);
+    disegnaS(true);
+    toast(`${nome} tolta dal preventivo.`);
+  }
+});
+document.getElementById("avanti").addEventListener("click", () => {
+  if (aperta === "servizi") return vai("C");
+  aperta = aperta + 1 < stato.stanze.length ? aperta + 1 : "servizi";
+  disegnaS(true);
+  window.scrollTo(0, 0);
+});
+
+// ---- Eventi · Riepilogo ----
+document.getElementById("righe").addEventListener("click", e => {
+  const b = e.target.closest(".cambia"); if (!b) return;
+  apri(b.dataset.stanza === "servizi" ? "servizi" : Number(b.dataset.stanza));
+});
+document.getElementById("ritocca").addEventListener("click", () => apri(0));
+document.getElementById("apriConti").addEventListener("click", () => { contiAperti = !contiAperti; disegnaC(); });
+
+// ---- Invio: tre anteprime, nella demo non parte niente ----
+const titoloPrev = () => `Preventivo arredamento – ${stato.stanze.map(s => s.nome).join(", ")}`;
+const chiudiFogli = () => document.querySelectorAll(".velo.on").forEach(v => v.classList.remove("on"));
+// pagina ferma mentre c'è un foglio aperto, e alla chiusura torna dov'era (bug dal telefono dell'elettricista, 16/10)
+let scrollFermo = 0;
+new MutationObserver(() => {
+  const aperto = !!document.querySelector(".velo.on"), b = document.body;
+  if (aperto && !b.classList.contains("fermo")) {
+    scrollFermo = window.scrollY;
+    b.style.top = `-${scrollFermo}px`; b.classList.add("fermo");
+  } else if (!aperto && b.classList.contains("fermo")) {
+    b.classList.remove("fermo"); b.style.top = "";
+    window.scrollTo(0, scrollFermo);
+  }
+}).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["class"] });
+document.getElementById("invia").addEventListener("click", () => document.getElementById("veloInvio").classList.add("on"));
+document.querySelectorAll("[data-chiudi]").forEach(b => b.addEventListener("click", chiudiFogli));
+["veloInvio", "veloMail", "veloPDF"].forEach(id => document.getElementById(id).addEventListener("click", e => { if (e.target.id === id) chiudiFogli(); }));
+document.getElementById("veloInvio").addEventListener("click", e => {
+  const b = e.target.closest("[data-canale]"); if (!b) return;
+  document.getElementById("veloInvio").classList.remove("on");
+  ({ WA: anteprimaWA, Mail: anteprimaMail, PDF: anteprimaPDF })[b.dataset.canale]();
+});
+
+// ---- PDF del preventivo: una sezione per stanza, una riga per mobile con l'immagine; in fondo i conti e l'acconto ----
+const NOME_PDF = "Preventivo-arredamento.pdf";
+// riga di un modulo sotto il suo gruppo: la finitura non si ripete, resta il codice
+function rigaPDF(s, k) {
+  const c = COMP[k], f = c.mano ? null : finDi(s, c.g);
+  const qta = aMetro(k) ? `${metri(s[k])} × ${euro(prezzoDi(s, k))}/m` : `${s[k]} × ${euro(prezzoDi(s, k))}`;
+  return `<div class="pdf-r figlia"><span class="pdf-nome">${c.nome}${f ? ` <small>· ${codice(f, k)}</small>` : ""}</span>
+    <span class="pdf-imp"><small>${qta}</small><span class="num">${euro(importo(s, k))}</span></span></div>`;
+}
+// gruppo: campione della finitura (grande, una volta sola), i moduli, la somma dei metri
+function gruppoPDF(s, g) {
+  const tipi = s.voci.filter(k => COMP[k].g === g.k && s[k] > 0);
+  if (!tipi.length) return "";
+  const f = finDi(s, g.k);
+  const larghi = tipi.filter(k => COMP[k].l), cm = larghi.reduce((t, k) => t + COMP[k].l * s[k], 0), nmod = larghi.reduce((t, k) => t + s[k], 0);
+  return `<div class="pdf-gr"><span class="pdf-camp ${f ? "" : "vuoto"}" ${f ? `style="background:${f.colore}"` : ""}></span>
+      <span class="pdf-nome"><b>${g.nome}</b><small>${f ? `${MARCHE[f.az]} · ${f.nome} ${f.fin.toLowerCase()}` : `<span class="dascegliere">finitura da scegliere</span>`}</small></span></div>` +
+    tipi.map(k => rigaPDF(s, k)).join("") +
+    (larghi.length ? `<div class="pdf-somma"><span>${nmod === 1 ? "1 modulo" : nmod + " moduli"} · ${metri(cm)}</span><span>${euro(tipi.reduce((t, k) => t + importo(s, k), 0))}</span></div>` : "");
+}
+function pdfHTML() {
+  const oggi = new Date().toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+  const stanze = stato.stanze.filter(s => s.voci.some(k => s[k] > 0)).map(s => {
+    const mano = s.voci.filter(k => COMP[k].mano && s[k] > 0);
+    return `<div class="pdf-sez"><div class="pdf-sez-t"><b>${s.nome}</b><span class="num">${euro(costo(s))}</span></div>` +
+      GRUPPI.map(g => gruppoPDF(s, g)).join("") +
+      (mano.length ? `<div class="pdf-gr"><span class="pdf-camp vuoto"></span><span class="pdf-nome"><b>Altro</b></span></div>` + mano.map(k => rigaPDF(s, k)).join("") : "") +
+      `</div>`;
+  }).join("");
+  return `<div class="pdf-testa"><div><div class="pdf-titolo">PREVENTIVO</div><div class="pdf-sotto">Arredamento · ${oggi}</div></div>
+      <div class="pdf-ditta"><div><b>Il tuo negozio</b><small>Arredamento</small></div><span class="logo">IN</span></div></div>
+    <div class="pdf-per">Per: <b>il tuo cliente</b></div>` +
+    (stanze || `<div class="vuoto">Aggiungi basi, armadi o divani: compaiono qui.</div>`) +
+    `<div class="pdf-conti">${contiRighe().map(([a, b]) => `<div><span>${a}</span><span>${b}</span></div>`).join("")}</div>` +
+    `<div class="pdf-tot"><span>Totale IVA inclusa</span><span class="num">${euro(totale())}</span></div>` +
+    (sconto() > 0 ? `<span class="pdf-risp">Risparmi ${euro(risparmio())} con lo sconto del ${PREZZI.sconto}%</span>` : "") +
+    `<div class="pdf-paga">
+      <div class="m oggi"><span class="pall">1</span><span>Alla firma · acconto ${PREZZI.acconto}%</span><span class="num">${euro(acconto())}</span></div>
+      <div class="m"><span class="pall">2</span><span>Alla consegna · a montaggio finito${consegnaTxt().replace(" · ", ", ")}</span><span class="num">${euro(totale() - acconto())}</span></div></div>` +
+    `<ul class="pdf-condiz">${PREZZI.validita ? `<li>Offerta valida ${PREZZI.validita} ${PREZZI.validita === 1 ? "giorno" : "giorni"}. ` : "<li>"}Misure da confermare con il rilievo.</li><li>Allacci di acqua, luce e gas esclusi.</li></ul>` +
+    `<div class="pdf-firma"><div>Data</div><div>Firma per accettazione</div></div>`;
+}
+const allegatoHTML = () => `<button class="allegato" data-apri-pdf><span class="pdf-ico">PDF</span><span><b>${NOME_PDF}</b><small>1 pagina · PDF</small></span></button>`;
+const testoBreve = () => `Buongiorno, le invio il preventivo per l'arredamento (${stato.stanze.map(s => s.nome).join(", ")}). Totale ${euro(totale())}, IVA inclusa; acconto alla firma ${euro(acconto())}.`;
+
+function anteprimaMail() {
+  document.getElementById("oggettoMail").textContent = titoloPrev();
+  document.getElementById("corpoMail").textContent = [testoBreve(), "", "Trova il preventivo nel PDF allegato.", "", "Cordiali saluti"].join("\n");
+  document.getElementById("allegMail").innerHTML = allegatoHTML();
+  document.getElementById("veloMail").classList.add("on");
+}
+function anteprimaPDF() {
+  document.getElementById("paginaPDF").innerHTML = pdfHTML();
+  document.getElementById("veloPDF").classList.add("on");
+}
+function anteprimaWA() {
+  const ora = new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  document.getElementById("bollaWA").innerHTML = allegatoHTML() + testoBreve() + '<span class="ora">' + ora + " ✓✓</span>";
+  document.getElementById("veloWA").classList.add("on");
+}
+document.addEventListener("click", e => {
+  if (!e.target.closest("[data-apri-pdf]")) return;
+  chiudiFogli(); anteprimaPDF();
+});
+document.getElementById("chiudiWA").addEventListener("click", () => document.getElementById("veloWA").classList.remove("on"));
+document.getElementById("veloWA").addEventListener("click", e => { if (e.target.id === "veloWA") e.currentTarget.classList.remove("on"); });
+
+// ---- Che mobile aggiungi: prima i gruppi della stanza, sotto gli altri ----
+function apriComp() {
+  const s = stato.stanze[aperta], tipo = tipoStanza(s.nome);
+  const suoi = GRUPPI.filter(g => g.stanze.includes(tipo)), altri = GRUPPI.filter(g => !g.stanze.includes(tipo));
+  document.getElementById("compSpiega").textContent = `In: ${s.nome}. Scegli il mobile, poi il tipo e la finitura dal catalogo.`;
+  document.getElementById("giaComp").innerHTML = s.voci.length
+    ? `<div class="gia-titolo">Già in questa stanza</div>` +
+      s.voci.map(k => `<div class="gia-riga"><span>${COMP[k].nome}</span><button data-togli="${k}">Togli</button></div>`).join("")
+    : "";
+  const bottoni = gg => `<div class="scelte">${gg.map(g => `<button data-gruppo-agg="${g.k}">${g.nome}</button>`).join("")}</div>`;
+  document.getElementById("sceltaComp").innerHTML =
+    (suoi.length ? `<p class="gruppi-t">Per ${s.nome.toLowerCase()}</p>` + bottoni(suoi) + `<p class="gruppi-t">Altri mobili</p>` : "") +
+    `<div class="scelte">${altri.map(g => `<button data-gruppo-agg="${g.k}">${g.nome}</button>`).join("")}<button class="altro" id="compAltro">+ Altro</button></div>`;
+  document.getElementById("mano").hidden = true;
+  document.getElementById("nomeMano").value = ""; document.getElementById("prezzoMano").value = "";
+  document.getElementById("veloComp").classList.add("on");
+}
+// misura di partenza di un mobile a metro: il top prende la lunghezza delle basi, gli altri la prima misura tonda
+function misuraIniziale(s, k) {
+  if (COMP[k].g === "top") {
+    const cm = s.voci.filter(x => COMP[x].g === "basi").reduce((t, x) => t + COMP[x].l * s[x], 0);
+    if (cm) return cm;
+  }
+  return COMP[k].rapide[2];
+}
+function aggiungiComp(k, avvisoMio) {
+  const s = stato.stanze[aperta];
+  if (s.voci.includes(k)) { if (!aMetro(k)) s[k] += 1; }
+  else { s.voci.push(k); s[k] = aMetro(k) ? misuraIniziale(s, k) : 1; }
+  if (COMP[k].g) s.aperti[COMP[k].g] = true;
+  stato.toccato = true;
+  chiudiFogli();
+  disegnaS(false);
+  if (aMetro(k)) return apriMis(k, true);   // a metro: si apre subito il tastierino per scrivere la misura vera
+  if (COMP[k].mano) window.scrollTo(0, document.body.scrollHeight);
+  const suggerimento = avvisoTogli ? "" : "Tocca il nome per il catalogo o per toglierlo.";
+  avvisoTogli = true;
+  const msg = [avvisoMio, suggerimento].filter(Boolean).join(" ");
+  if (msg) toast(msg);
+}
+function togliComp(k) {
+  const s = stato.stanze[aperta], nome = COMP[k].nome;
+  s.voci = s.voci.filter(x => x !== k);
+  delete s[k];
+  if (COMP[k].mano && !stato.stanze.some(x => x.voci.includes(k))) { CATALOGO.splice(CATALOGO.findIndex(c => c.k === k), 1); delete COMP[k]; }
+  stato.toccato = true;
+  disegnaS(false);
+  toast(`${nome} tolto da ${s.nome}.`);
+}
+// mobile scritto a mano: nome e prezzo scritti lì (non c'è catalogo), si conta a pezzi
+let nMano = 0;
+function aggiungiMano() {
+  let nome = document.getElementById("nomeMano").value.replace(/[<>&"']/g, "").trim();
+  nome = nome.charAt(0).toUpperCase() + nome.slice(1);   // "scarpiera" → "Scarpiera"
+  if (!nome) return document.getElementById("nomeMano").focus();
+  const p = parseInt(document.getElementById("prezzoMano").value.replace(/\D/g, ""), 10) || 0;
+  const k = "mano" + (++nMano);
+  const c = { k, nome, corto: nome, sim: "altro", prezzo: p, mano: true, conta: "pezzi" };
+  CATALOGO.push(c); COMP[k] = c;
+  aggiungiComp(k, p ? "" : `${nome}: prezzo a € 0, toccalo per cambiarlo.`);
+}
+// toccando un mobile scritto a mano: si cambia il prezzo o si toglie
+function apriMano(k) {
+  const c = COMP[k], n = prompt(`Prezzo di ${c.nome} (€, IVA esclusa). Scrivi 0 e conferma due volte per toglierlo.`, c.prezzo);
+  if (n === null) return;
+  const p = parseInt(String(n).replace(/\D/g, ""), 10) || 0;
+  if (p === 0 && c.prezzo === 0) return togliComp(k);
+  c.prezzo = p; stato.toccato = true; disegnaS(false);
+}
+document.getElementById("veloComp").addEventListener("click", e => {
+  const t = e.target.closest("[data-togli]");
+  if (t) { togliComp(t.dataset.togli); return apriComp(); }   // il foglio resta aperto
+  const ga = e.target.closest("[data-gruppo-agg]");
+  if (ga) { document.getElementById("veloComp").classList.remove("on"); return apriTipi(ga.dataset.gruppoAgg, true); }
+  if (e.target.closest("#compAltro")) { document.getElementById("mano").hidden = false; return document.getElementById("nomeMano").focus(); }
+  if (e.target.closest("#aggMano")) return aggiungiMano();
+  if (e.target.id === "veloComp") document.getElementById("veloComp").classList.remove("on");
+});
+["nomeMano", "prezzoMano"].forEach(id => document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") aggiungiMano(); }));
+
+// ---- Che tipo: se il gruppo ha già la finitura nella stanza il tipo entra subito, se no prima il catalogo ----
+let tipiDaComp = false, catDaTipi = false;
+function apriTipi(gk, daComp = false) {
+  tipiDaComp = daComp;
+  document.getElementById("indietroTipi").hidden = !daComp;
+  const g = GR[gk], s = stato.stanze[aperta];
+  document.getElementById("tipiTitolo").textContent = g.domanda;
+  const f = finDi(s, gk);
+  document.getElementById("tipiSpiega").textContent = f ? `In: ${s.nome}. Finitura: ${sceltoTxt(f)}.` : `In: ${s.nome}. Poi scegli la finitura dal catalogo.`;
+  document.getElementById("sceltaTipi").innerHTML = TIPI.filter(t => t.g === gk).map(t =>
+    `<button data-tipo="${t.k}">${t.corto}<br><small style="color:var(--sec);font-weight:500">${euro(prezzoDi(s, t.k))}${t.conta === "metro" ? " al metro" : ""}</small>${
+      s.voci.includes(t.k) ? `<br><small style="color:var(--verde)">già qui: ${aMetro(t.k) ? s[t.k] + " cm" : s[t.k]}</small>` : ""}</button>`).join("");
+  document.getElementById("veloTipi").classList.add("on");
+}
+document.getElementById("veloTipi").addEventListener("click", e => {
+  const b = e.target.closest("[data-tipo]");
+  if (b) {
+    document.getElementById("veloTipi").classList.remove("on");
+    const k = b.dataset.tipo, s = stato.stanze[aperta];
+    if (finDi(s, COMP[k].g) || s.voci.includes(k)) return aggiungiComp(k);
+    catDaTipi = true;
+    return apriCat(COMP[k].g, k, true);
+  }
+  if (e.target.closest("#indietroTipi")) { e.currentTarget.classList.remove("on"); return apriComp(); }
+  if (e.target.id === "veloTipi") e.currentTarget.classList.remove("on");
+});
+
+// ---- Metro: tastierino nostro (niente lettere, niente virgola sbagliata), misure tonde a un tocco ----
+let misK = null, misVal = 0, misNuovo = true;
+function apriMis(k, appenaAggiunto = false) {
+  const s = stato.stanze[aperta], c = COMP[k], f = finDi(s, c.g);
+  misK = k; misVal = s[k]; misNuovo = true;   // il primo tasto scrive da capo, come una calcolatrice
+  document.getElementById("toast").classList.remove("on");   // l'avviso non deve coprire il tastierino
+  document.getElementById("misTitolo").textContent = `Misura: ${c.corto}`;
+  document.getElementById("misSpiega").textContent = `In: ${s.nome}${f ? " · " + f.nome + " " + f.fin.toLowerCase() : ""}.` + (appenaAggiunto && c.g === "top" && s.voci.some(x => COMP[x].g === "basi") ? " Lunghezza presa dalle basi." : "");
+  document.getElementById("misTasti").innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button data-n="${n}">${n}</button>`).join("") +
+    `<button class="parola" data-n="c">Cancella</button><button data-n="0">0</button><button data-n="b" aria-label="Cancella una cifra">⌫</button>`;
+  disegnaMis();
+  document.getElementById("veloMis").classList.add("on");
+}
+function disegnaMis() {
+  const s = stato.stanze[aperta], p = prezzoDi(s, misK);
+  document.getElementById("misNum").textContent = misVal;
+  document.getElementById("misConto").innerHTML = `${metri(misVal)} × ${euro(p)} = <b>${euro(Math.round(misVal / 100 * p))}</b>`;
+  document.getElementById("misRapide").innerHTML = COMP[misK].rapide.map(n => `<button data-r="${n}" aria-pressed="${n === misVal}">${n}</button>`).join("");
+}
+document.getElementById("veloMis").addEventListener("click", e => {
+  const r = e.target.closest("[data-r]");
+  if (r) { misVal = Number(r.dataset.r); misNuovo = true; return disegnaMis(); }
+  const t = e.target.closest("[data-n]");
+  if (t) {
+    const n = t.dataset.n;
+    if (n === "c") misVal = 0;
+    else if (n === "b") misVal = Math.floor(misVal / 10);
+    else misVal = misNuovo ? Number(n) : Math.min(9999, misVal * 10 + Number(n));
+    misNuovo = false;
+    return disegnaMis();
+  }
+  if (e.target.closest("#misFatto") || e.target.id === "veloMis") {
+    stato.stanze[aperta][misK] = misVal; stato.toccato = true;
+    e.currentTarget.classList.remove("on");
+    disegnaS(false);
+    const q = document.getElementById("q-" + misK);
+    if (q) { q.classList.remove("batte"); void q.offsetWidth; q.classList.add("batte"); }
+  }
+});
+
+// ---- Foto segnaposto: un disegno del mobile nel colore della finitura ----
+function disegno(g, x) {
+  const c = x.colore, t = x.segno, b = 'stroke="rgba(0,0,0,.25)" stroke-width="1"';
+  const maniglia = (x0, y0, w = 8) => `<rect x="${x0}" y="${y0}" width="${w}" height="2" rx="1" fill="${t}"/>`;
+  const D = {
+    basi:     `<rect x="6" y="18" width="52" height="36" rx="2" fill="${c}" ${b}/><rect x="4" y="14" width="56" height="5" rx="1" fill="#D8D6CF"/><path d="M32 19v35" stroke="${t}" stroke-opacity=".5"/>${maniglia(22, 24)}${maniglia(34, 24)}<rect x="8" y="54" width="48" height="4" fill="#4A4D55"/>`,
+    pensili:  `<rect x="6" y="12" width="52" height="30" rx="2" fill="${c}" ${b}/><path d="M32 12v30" stroke="${t}" stroke-opacity=".5"/>${maniglia(22, 36)}${maniglia(34, 36)}`,
+    colonne:  `<rect x="18" y="4" width="28" height="56" rx="2" fill="${c}" ${b}/><rect x="22" y="22" width="20" height="14" rx="1.5" fill="#1F2023"/><path d="M18 20h28M18 38h28" stroke="${t}" stroke-opacity=".5"/>${maniglia(28, 42)}`,
+    top:      `<path d="M4 30l12-10h44L48 30z" fill="${c}" ${b}/><path d="M4 30h44v6H4zM48 30l12-10v6L48 36z" fill="${c}" ${b}/><path d="M10 28l8-6" stroke="${t}" stroke-opacity=".35"/>`,
+    elettro:  `<rect x="10" y="8" width="44" height="48" rx="3" fill="${c}" ${b}/><rect x="16" y="20" width="32" height="26" rx="2" fill="#151618" fill-opacity=".85"/>${maniglia(20, 14, 24)}<circle cx="44" cy="13" r="2" fill="${t}"/>`,
+    divani:   `<rect x="10" y="16" width="44" height="18" rx="4" fill="${c}" ${b}/><rect x="4" y="28" width="56" height="18" rx="5" fill="${c}" ${b}/><path d="M32 30v14" stroke="${t}" stroke-opacity=".5"/><path d="M8 46v6M56 46v6" stroke="#4A4D55" stroke-width="2.5"/>`,
+    parete:   `<rect x="4" y="38" width="56" height="14" rx="1.5" fill="${c}" ${b}/><rect x="4" y="10" width="14" height="28" rx="1.5" fill="${c}" ${b}/><rect x="22" y="14" width="34" height="3" fill="${c}" ${b}/><rect x="26" y="20" width="26" height="15" rx="1" fill="#151618"/><path d="M32 38v14" stroke="${t}" stroke-opacity=".5"/>`,
+    tavoli:   `<path d="M4 24l10-8h36l10 8z" fill="${c}" ${b}/><rect x="4" y="24" width="56" height="4" fill="${c}" ${b}/><path d="M9 28v26M55 28v26M20 28v20M44 28v20" stroke="${t}" stroke-width="3"/>`,
+    sedie:    `<rect x="18" y="6" width="26" height="24" rx="3" fill="${c}" ${b}/><rect x="16" y="30" width="30" height="6" rx="2" fill="${c}" ${b}/><path d="M20 36v20M42 36v20" stroke="${t}" stroke-width="3"/>`,
+    librerie: `<rect x="12" y="4" width="40" height="56" rx="1.5" fill="none" stroke="${c === "#F4F3EF" ? "#C9C7C1" : c}" stroke-width="4"/><path d="M12 22h40M12 40h40" stroke="${c === "#F4F3EF" ? "#C9C7C1" : c}" stroke-width="3"/><rect x="18" y="10" width="4" height="10" fill="#9A9DA4"/><rect x="23" y="12" width="4" height="8" fill="#6B6E75"/><rect x="38" y="28" width="9" height="10" fill="#9A9DA4"/>`,
+    letti:    `<rect x="6" y="14" width="12" height="38" rx="2" fill="${c}" ${b}/><rect x="16" y="28" width="44" height="16" rx="3" fill="#ECEBE6" ${b}/><rect x="16" y="40" width="44" height="8" rx="1.5" fill="${c}" ${b}/><rect x="20" y="24" width="12" height="7" rx="2" fill="#FAFAF8" ${b}/>`,
+    armadi:   `<rect x="8" y="4" width="48" height="56" rx="1.5" fill="${c}" ${b}/><path d="M24 4v56M40 4v56" stroke="${t}" stroke-opacity=".5"/><rect x="21" y="26" width="2" height="10" rx="1" fill="${t}"/><rect x="25" y="26" width="2" height="10" rx="1" fill="${t}"/><rect x="37" y="26" width="2" height="10" rx="1" fill="${t}"/>`,
+    comodini: `<rect x="14" y="16" width="36" height="36" rx="2" fill="${c}" ${b}/><path d="M14 34h36" stroke="${t}" stroke-opacity=".5"/>${maniglia(28, 24)}${maniglia(28, 42)}<path d="M18 52v6M46 52v6" stroke="#4A4D55" stroke-width="2.5"/>`,
+    lavabo:   `<rect x="6" y="26" width="52" height="26" rx="2" fill="${c}" ${b}/><path d="M8 22h48v5H8z" fill="#FAFAF8" ${b}/><path d="M32 12v8M28 12h8" stroke="#8C8F98" stroke-width="2.5"/><path d="M6 39h52" stroke="${t}" stroke-opacity=".5"/>${maniglia(28, 32)}${maniglia(28, 45)}`,
+    specchi:  `<rect x="18" y="4" width="28" height="44" rx="14" fill="#DDE7EA" stroke="${c}" stroke-width="3"/><path d="M26 16l8-8M26 24l14-14" stroke="#FFFFFF" stroke-width="2"/><rect x="14" y="50" width="36" height="8" rx="1.5" fill="${c}" ${b}/>`,
+  };
+  return `<svg viewBox="0 0 64 64">${D[g] || D.comodini}</svg>`;
+}
+const codice = (x, k) => `${"ABC"[x.az]}-${(k || x.id.split("-")[0]).replace(/[aeiou]/g, "").slice(0, 3).toUpperCase().padEnd(3, "X")}-${String(Number(x.id.split("-")[2]) + 1).padStart(2, "0")}`;
+
+// ---- Catalogo del gruppo: azienda → finitura, vale per tutto il gruppo nella stanza; "Togli" in fondo ----
+let catG = null, catTipo = null, catAz = 0, catNuovo = false;
+function apriCat(g, tipo = null, nuovo = false, az) {
+  document.getElementById("indietroCat").hidden = !catDaTipi;
+  catG = g; catTipo = tipo; catNuovo = nuovo;
+  const s = stato.stanze[aperta], f = finDi(s, g), gr = GR[g];
+  catAz = az ?? (f ? f.az : 0);
+  // prezzo mostrato sulle schede: quello del tipo toccato, se no del primo tipo del gruppo
+  const rif = COMP[tipo] || TIPI.find(t => t.g === g);
+  document.getElementById("modTitolo").textContent = `Catalogo: ${gr.nome}`;
+  document.getElementById("modSpiega").textContent = `In: ${s.nome}. Una finitura per ${gr.nome.toLowerCase()} di questa stanza. Prezzi di: ${rif.corto}${rif.conta === "metro" ? ", al metro" : ""}.`;
+  let html = `<p class="avviso-cat">Foto, marche e codici di prova: qui andrà il catalogo dell'azienda.</p>` +
+    `<div class="aziende">${AZIENDE.map((a, n) => `<button data-az="${n}" aria-pressed="${n === catAz}">${a}</button>`).join("")}</div>` +
+    FINITURE[gr.fam][catAz].map(x =>
+      `<button class="mod" data-m="${x.id}" aria-pressed="${x.id === s.fin[g]}">
+        <span class="foto">${disegno(g, x)}</span>
+        <span class="info"><span class="marca">${MARCHE[x.az]}</span><b>${x.nome} · ${x.fin}</b><span class="cod">Cod. ${codice(x, rif.k)}</span></span>
+        <span class="piu-p num">${euro(Math.round(rif.prezzo * x.x))}</span></button>`).join("");
+  if (nuovo) html += `<button class="mod nessuno" data-m="">Aggiungi e scegli dopo</button>`;
+  if (tipo && !nuovo) html += `<button class="togli-cat" data-togli-cat>Togli ${COMP[tipo].nome} da ${s.nome}</button>`;
+  document.getElementById("modelli").innerHTML = html;
+  document.getElementById("veloMod").classList.add("on");
+}
+document.getElementById("veloMod").addEventListener("click", e => {
+  if (e.target.closest("#indietroCat")) { catNuovo = false; e.currentTarget.classList.remove("on"); return apriTipi(catG, tipiDaComp); }
+  const az = e.target.closest("[data-az]");
+  if (az) return apriCat(catG, catTipo, catNuovo, Number(az.dataset.az));
+  if (e.target.closest("[data-togli-cat]")) { e.currentTarget.classList.remove("on"); return togliComp(catTipo); }
+  const b = e.target.closest("[data-m]");
+  if (b) {
+    const s = stato.stanze[aperta];
+    if (b.dataset.m) s.fin[catG] = b.dataset.m;
+    const f = finDi(s, catG), msg = f ? `${GR[catG].nome}: ${sceltoTxt(f)}.` : "";
+    if (catNuovo) { catNuovo = false; return aggiungiComp(catTipo, msg); }   // il tipo entra nella stanza
+    stato.toccato = true;
+    e.currentTarget.classList.remove("on");
+    disegnaS(false);
+    return msg && toast(msg);
+  }
+  if (e.target.id === "veloMod") { catNuovo = false; e.currentTarget.classList.remove("on"); }
+});
+
+// ---- Nuova stanza ----
+function apriFoglio() {
+  document.getElementById("scelte").innerHTML = NUOVE.map(n => `<button data-n="${n}">${n}</button>`).join("") +
+    `<button class="altro" id="stanzaAltro">+ Altro</button>`;
+  document.getElementById("manoStanza").hidden = true;
+  document.getElementById("nomeStanza").value = "";
+  document.getElementById("velo").classList.add("on");
+}
+function aggiungiStanza(base) {
+  let nome = base, n = 2;
+  while (stato.stanze.some(s => s.nome === nome)) nome = `${base} ${n++}`;
+  stato.stanze.push(vuota(nome));
+  stato.toccato = true;
+  aperta = stato.stanze.length - 1;
+  document.getElementById("velo").classList.remove("on");
+  disegnaS(true);
+}
+function aggiungiStanzaMano() {
+  let nome = document.getElementById("nomeStanza").value.replace(/[<>&"']/g, "").trim();
+  nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+  if (!nome) return document.getElementById("nomeStanza").focus();
+  aggiungiStanza(nome);
+}
+document.getElementById("velo").addEventListener("click", e => {
+  const b = e.target.closest("[data-n]");
+  if (b) return aggiungiStanza(b.dataset.n);
+  if (e.target.closest("#stanzaAltro")) { document.getElementById("manoStanza").hidden = false; return document.getElementById("nomeStanza").focus(); }
+  if (e.target.closest("#aggStanza")) return aggiungiStanzaMano();
+  if (e.target.id === "velo") document.getElementById("velo").classList.remove("on");
+});
+document.getElementById("nomeStanza").addEventListener("keydown", e => { if (e.key === "Enter") aggiungiStanzaMano(); });
+
+nuovo();
+vai("S");
+
+// ===== i lati su computer si aggiornano a ogni disegno della schermata =====
+function lati() {
+  // mazzetta: nella stanza aperta i suoi gruppi; su Servizi e sul Riepilogo tutte le stanze
+  const mz = document.getElementById("mazzetta");
+  if (mz) {
+    const inStanza = typeof aperta === "number" && !document.getElementById("schermoS").hidden;
+    const stanze = inStanza ? [aperta] : stato.stanze.map((_, i) => i);
+    document.getElementById("mazzTitolo").textContent = inStanza ? `Le finiture di ${stato.stanze[aperta].nome}` : "Le finiture del preventivo";
+    let html = "";
+    stanze.forEach(i => {
+      const s = stato.stanze[i];
+      GRUPPI.filter(g => s.voci.some(k => COMP[k].g === g.k)).forEach(g => {
+        const f = finDi(s, g.k), tipi = s.voci.filter(k => COMP[k].g === g.k);
+        const larghi = tipi.filter(k => COMP[k].l), cm = larghi.reduce((t, k) => t + COMP[k].l * s[k], 0), nmod = larghi.reduce((t, k) => t + s[k], 0);
+        const metro = tipi.find(aMetro);
+        const quanto = larghi.length ? `${nmod === 1 ? "1 modulo" : nmod + " moduli"}, ${metri(cm)}` : metro ? metri(s[metro]) : pezziTxt(tipi.reduce((t, k) => t + s[k], 0));
+        const prezzo = metro && !larghi.length ? `${euro(prezzoDi(s, metro))} al metro` : `${COMP[tipi[0]].corto} ${euro(prezzoDi(s, tipi[0]))}`;
+        html += `<button class="campione ${f ? "" : "vuoto"}" data-camp="${g.k}" data-stanza="${i}">
+          <span class="colore" ${f ? `style="background:${f.colore}"` : ""}>${f ? `<span>${AZIENDE[f.az]}</span>` : ""}</span>
+          <span class="info"><b>${g.nome} · ${f ? (f.nome === g.nome ? f.fin : `${f.nome} ${f.fin.toLowerCase()}`) : "finitura da scegliere"}</b>
+          <small>${inStanza ? "" : `<span class="stanza-c">${s.nome}</span> · `}${prezzo} · ${quanto}</small></span></button>`;
+      });
+    });
+    // nella stanza aperta, fino a due gruppi che di solito ci sono e mancano: un invito ad aggiungere
+    if (inStanza) {
+      const s = stato.stanze[aperta], tipo = tipoStanza(s.nome);
+      GRUPPI.filter(g => g.stanze.includes(tipo) && !s.voci.some(k => COMP[k].g === g.k)).slice(0, 2).forEach(g => {
+        html += `<button class="campione vuoto" data-camp-nuovo="${g.k}"><span class="colore"></span><span class="info"><b>${g.nome}</b><small>Non ancora nel preventivo · tocca per aggiungere</small></span></button>`;
+      });
+    }
+    mz.innerHTML = html || `<p class="mazz-vuota">Aggiungi i mobili: qui compaiono le finiture scelte, grandi, da far vedere al cliente.</p>`;
+    // sul Riepilogo "Come si paga" c'è già al centro: a destra non si ripete
+    document.getElementById("pagaLato").hidden = !document.getElementById("schermoC").hidden;
+    document.getElementById("pagaLato").innerHTML =
+      `<div class="m oggi"><span class="pall">1</span><span>Alla firma · ${PREZZI.acconto}%</span><span class="num">${euro(acconto())}</span></div>` +
+      `<div class="m"><span class="pall">2</span><span>Alla consegna</span><span class="num">${euro(totale() - acconto())}</span></div>`;
+  }
+  const sl = document.getElementById("stanzeLato");
+  if (sl) {
+    sl.innerHTML = stato.stanze.map((s, i) => `<button class="${aperta === i ? "on" : ""}" data-lato="${i}"><b>${s.nome}</b><span>${pezziTxt(pezzi(s))} · ${euro(costo(s))}</span></button>`).join("") +
+      `<button class="${aperta === "servizi" ? "on" : ""}" data-lato="servizi"><b>Servizi</b><span>${euro(montaggio() + servizi())}</span></button>` +
+      `<div class="tot-lato"><span>Totale IVA inclusa</span><b>${euro(totale())}</b></div>`;
+  }
+}
+// mazzetta: toccando un campione si apre il catalogo di quel gruppo; uno rigato apre la scelta del tipo
+document.addEventListener("click", e => {
+  const c = e.target.closest("[data-camp]");
+  if (c) { aperta = Number(c.dataset.stanza); vai("S"); catDaTipi = false; return apriCat(c.dataset.camp); }
+  const n = e.target.closest("[data-camp-nuovo]");
+  if (n) return apriTipi(n.dataset.campNuovo);
+  if (e.target.closest("[data-apri-pdf-lato]")) anteprimaPDF();
+});
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-lato]"); if (!b) return;
+  apri(b.dataset.lato === "servizi" ? "servizi" : Number(b.dataset.lato));
+});
+const _disegnaS = disegnaS, _disegnaC = disegnaC;
+disegnaS = function (x) { _disegnaS(x); lati(); };
+disegnaC = function () { _disegnaC(); lati(); };
+lati();
+
+// ===== catalogo completo (sfoglia e scegli la finitura per la stanza aperta) e invio dalla vetrina =====
+let catTuttoAz = 0;
+const stanzaDest = () => aperta === "servizi" ? 0 : aperta;
+function disegnaCatTutto() {
+  const s = stato.stanze[stanzaDest()];
+  document.getElementById("corpoCatTutto").innerHTML =
+    `<div class="aziende">${AZIENDE.map((a, n) => `<button data-az-tutto="${n}" aria-pressed="${n === catTuttoAz}">${a}</button>`).join("")}</div>` +
+    GRUPPI.map(g => { const rif = TIPI.find(t => t.g === g.k);
+      return `<h3>${g.nome}</h3><div class="griglia-cat" style="margin-top:12px">${FINITURE[g.fam][catTuttoAz].map(x => `<div class="carta-cat"><span class="foto">${disegno(g.k, x)}</span>
+        <div><span class="marca">${MARCHE[x.az]}</span><b>${x.nome} · ${x.fin}</b><span class="cod">${rif.corto}: ${euro(Math.round(rif.prezzo * x.x))}${rif.conta === "metro" ? " al metro" : ""}</span></div>
+        <div class="riga-p"><span></span><button class="agg" data-fin-tutto="${g.k}" data-id="${x.id}">Usa in ${s.nome}</button></div></div>`).join("")}</div>`; }).join("");
+}
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-apri-cat]")) { disegnaCatTutto(); return document.getElementById("veloCatTutto").classList.add("on"); }
+  if (e.target.closest("[data-apri-invio]")) return document.getElementById("veloInvio").classList.add("on");
+  const az = e.target.closest("[data-az-tutto]");
+  if (az) { catTuttoAz = Number(az.dataset.azTutto); return disegnaCatTutto(); }
+  const ft = e.target.closest("[data-fin-tutto]");
+  if (ft) {
+    const s = stato.stanze[stanzaDest()], g = ft.dataset.finTutto;
+    s.fin[g] = ft.dataset.id; stato.toccato = true; ridisegna();
+    return toast(`${GR[g].nome} in ${s.nome}: ${sceltoTxt(MOD[ft.dataset.id])}.` + (s.voci.some(k => COMP[k].g === g) ? "" : ` Aggiungi i pezzi da "+ Aggiungi mobile".`));
+  }
+  if (e.target.closest("[data-chiudi-cat]") || e.target.id === "veloCatTutto") document.getElementById("veloCatTutto").classList.remove("on");
+});
+</script>
+</body>
+</html>
